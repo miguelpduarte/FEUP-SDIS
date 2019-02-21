@@ -4,6 +4,12 @@ import java.util.Arrays;
 
 public class Client {
     public static void main(String[] args) {
+        if (args.length != 4 && args.length != 5) {
+            System.out.println("Invalid number of arguments. Usage:\n" +
+                               "Client <hostname> <port> REGISTER <plate> <name>\n" +
+                               "Client <hostname> <port> LOOKUP <plate>");
+            return;
+        }
         String hostname = args[0];
         int port = Integer.parseInt(args[1]);
         String operation = args[2];
@@ -13,12 +19,6 @@ public class Client {
     }
 
     public Client(String hostname, int port, String operation, String[] operands) {
-        System.out.printf("hostname: %s\nPort: %d\nOperation: %s\n", hostname, port, operation);
-
-        for (String operand : operands) {
-            System.out.println(operand);
-        }
-
         try {
             DatagramSocket ds = new DatagramSocket();
 
@@ -35,6 +35,10 @@ public class Client {
                 DatagramPacket dp = new DatagramPacket(data, data.length, InetAddress.getByName(hostname), port);
 
                 ds.send(dp);
+
+                ds.receive(dp);
+                String res = new String(dp.getData(), 0, dp.getLength());
+                System.out.println("Response: " + res);
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (IOException e) {
