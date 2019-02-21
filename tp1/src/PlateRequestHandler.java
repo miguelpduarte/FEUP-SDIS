@@ -1,14 +1,12 @@
 import java.net.DatagramPacket;
 import java.util.Arrays;
-import java.util.HashMap;
 
 public class PlateRequestHandler extends AbstractRequestHandler {
-    protected PlateRequestHandler() {
+    private final PlateDatabase plateDatabase = new PlateDatabase();
+
+    public PlateRequestHandler() {
         super(274);
     }
-
-    private final HashMap<String,String> database = new HashMap<>();
-
 
     @Override
     byte[] handleRequest(DatagramPacket received_packet) {
@@ -22,32 +20,41 @@ public class PlateRequestHandler extends AbstractRequestHandler {
             case "LOOKUP":
                 return this.handleLookup(Arrays.copyOfRange(request, 1, request.length));
             default:
-                System.out.println("Invalid request type received");
+                System.out.println("DBG:Invalid request type received");
                 return "-1".getBytes();
         }
     }
 
     private byte[] handleRegister(String[] data) {
         if (data.length != 2) {
-            System.out.println("REGISTER:Not enough arguments");
-            return new byte[0];
+            System.out.println("DBG:REGISTER:Not enough arguments");
+            return "-1".getBytes();
         }
 
-        this.database.put(data[0], data[1]);
-        System.out.println("REGISTER:inserted " + data[0] + "->" + data[1]);
-        System.out.println("REGISTER:" + this.database.size() + " vehicles in the database.");
-        return new byte[0];
+        if (plateDatabase.insertKeyValue(data[0], data[1])) {
+            System.out.println("DBG:REGISTER:inserted " + data[0] + "->" + data[1]);
+            System.out.println("DBG:REGISTER:" + plateDatabase.getNrPlates() + " vehicles in the database.");
+            return String.valueOf(plateDatabase.getNrPlates()).getBytes();
+        }
+
+        System.out.println("DBG:REGISTER:Error in registering vehicle");
+        return "-1".getBytes();
     }
 
     private byte[] handleLookup(String[] data) {
         if (data.length != 1) {
-            System.out.println("LOOKUP:Not enough arguments");
-            return new byte[0];
+            System.out.println("DBG:LOOKUP:Not enough arguments");
+            return "-1".getBytes();
         }
 
-        String result = this.database.get(data[0]);
+        String result = plateDatabase.queryPlateOwner(data[0]);
 
-        System.out.println("LOOKUP:query: " + data[0] + " result:" + result);
-        return new byte[0];
+        System.out.println("DBG:LOOKUP:query: " + data[0] + " result:" + result);
+
+        if (result == null) {
+            return "-1".getBytes();
+        }
+
+        return result.getBytes();
     }
 }
