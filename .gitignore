@@ -7,6 +7,8 @@
 
 # Would be good if the .idea stuff worked, but it doesn't
 .idea
+# Also ignoring the project files, they do not sync very well
+*.iml
 # # User-specific stuff
 # **/.idea/**/workspace.xml
 # **/.idea/**/tasks.xml
