@@ -8,8 +8,10 @@ import java.util.Arrays;
 public class MulticastClient {
     public static final int ADVERT_PACKET_SIZE = 128;
     private final DatagramPacket advert_packet;
+    private final String multicast_addr;
     private final String operation;
     private final String[] operands;
+    private final int multicast_port;
     private MulticastSocket ms;
 
     public static void main(String[] args) {
@@ -27,8 +29,10 @@ public class MulticastClient {
     }
 
     public MulticastClient(String multicast_addr, int multicast_port, String operation, String[] operands) {
+        this.multicast_addr = multicast_addr;
         this.operation = operation;
         this.operands = operands;
+        this.multicast_port = multicast_port;
 
         this.advert_packet = new DatagramPacket(new byte[ADVERT_PACKET_SIZE], ADVERT_PACKET_SIZE);
 
@@ -57,7 +61,10 @@ public class MulticastClient {
                     continue;
                 }
 
-                this.communicateWithServer(this.advert_packet.getAddress(), Integer.parseInt(raw_str[1]));
+                final int server_port = Integer.parseInt(raw_str[1]);
+
+                System.out.printf("multicast: %s %d : %s %d\n", this.multicast_addr, this.multicast_port, this.advert_packet.getAddress(), server_port);
+                this.communicateWithServer(this.advert_packet.getAddress(), server_port);
                 break;
 
             } catch (SocketTimeoutException e) {
@@ -70,7 +77,6 @@ public class MulticastClient {
     }
 
     private void communicateWithServer(InetAddress address, int port) {
-        System.out.println("Gonna do stuff: " + address + " | " + port);
         new Client(address, port, this.operation, this.operands);
     }
 }

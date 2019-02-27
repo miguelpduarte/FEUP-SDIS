@@ -46,7 +46,7 @@ public class Client {
 
                 ds.receive(dp);
                 String res = new String(dp.getData(), 0, dp.getLength());
-                System.out.println("Response: " + res);
+                System.out.printf("%s :: %s\n", stringBuilder.toString(), res);
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (IOException e) {

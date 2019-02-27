@@ -49,6 +49,7 @@ public class Server {
             System.out.println("Request from <" + dp.getAddress() + ", " + dp.getPort() + ">");
 
             byte[] res = this.request_handler.handleRequest(dp);
+            System.out.printf("%s :: %s\n", new String(dp.getData(), 0, dp.getLength()), new String(res, 0, res.length));
             dp.setData(res);
 
             try {
