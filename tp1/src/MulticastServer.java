@@ -70,6 +70,6 @@ public class MulticastServer {
             public void run() {
                 new Server(server_port, new PlateRequestHandler());
             }
-        });
+        }).start();
     }
 }
