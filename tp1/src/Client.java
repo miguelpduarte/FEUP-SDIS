@@ -15,10 +15,18 @@ public class Client {
         String operation = args[2];
         String[] operands = Arrays.copyOfRange(args, 3, args.length);
 
-        Client s = new Client(hostname, port, operation, operands);
+        try {
+            new Client(hostname, port, operation, operands);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
-    public Client(String hostname, int port, String operation, String[] operands) {
+    public Client(String hostname, int port, String operation, String[] operands) throws UnknownHostException {
+        this(InetAddress.getByName(hostname), port, operation, operands);
+    }
+
+    public Client(InetAddress hostname, int port, String operation, String[] operands) {
         try {
             DatagramSocket ds = new DatagramSocket();
 
@@ -32,7 +40,7 @@ public class Client {
             byte[] data = stringBuilder.toString().getBytes();
 
             try {
-                DatagramPacket dp = new DatagramPacket(data, data.length, InetAddress.getByName(hostname), port);
+                DatagramPacket dp = new DatagramPacket(data, data.length, hostname, port);
 
                 ds.send(dp);
 

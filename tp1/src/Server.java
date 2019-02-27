@@ -14,7 +14,8 @@ public class Server {
             return;
         }
         int port = Integer.parseInt(args[0]);
-        Server s = new Server(port, new PlateRequestHandler());
+
+        new Server(port, new PlateRequestHandler());
     }
 
     public Server(int port, AbstractRequestHandler request_handler) {
@@ -26,13 +27,13 @@ public class Server {
         try {
             this.ds = new DatagramSocket(port);
 
-            this.startServer();
+            this.start();
         } catch (SocketException e) {
             e.printStackTrace();
         }
     }
 
-    private void startServer() {
+    private void start() {
         System.out.println("Server listening in port " + port);
         byte[] b = new byte[this.request_handler.getRequestMaxSize()];
 
