@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 
 public class Peer extends UnicastRemoteObject implements IPeer {
     private final String protocol_version;
@@ -38,6 +39,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
     }
 
     public static void main(String args[]) throws Exception {
+        System.out.println("My args");
+        System.out.println("args = [" + Arrays.toString(args) + "]");
+
         if (args.length != 9) {
             System.err.println("Wrong no. of arguments");
             System.exit(1);
@@ -60,10 +64,22 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
         System.out.printf("Peer with id '%s' created.\n", server_id);
 
-        Registry reg = LocateRegistry.createRegistry(1099);
+        /// Create a registry if not yet running. If it is already running, just use the existing one.
+        try {
+            Registry reg = LocateRegistry.getRegistry();
 
-        // Bind this object instance to a name
-        reg.bind(service_access_point, obj);
+            // Bind this object instance to a name
+            reg.bind(service_access_point, obj);
+
+            System.out.println("Bound with gotten registry");
+        } catch(RemoteException e) {
+            Registry reg = LocateRegistry.createRegistry(1099);
+
+            // Bind this object instance to a name
+            reg.bind(service_access_point, obj);
+
+            System.out.println("Bound with created registry");
+        }
 
         System.out.printf("Registered object instance to access point '%s'.\n", service_access_point);
     }
