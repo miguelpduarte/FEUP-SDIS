@@ -1,6 +1,6 @@
+import javax.xml.crypto.Data;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.*;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -13,6 +13,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
     private MulticastSocket mc;
     private MulticastSocket mdb;
     private MulticastSocket mdr;
+    private static final int PACKET_SIZE = 1024;
 
     public Peer(String protocol_version, String server_id, String mc_hostname, int mc_port, String mdb_hostname, int mdb_port, String mdr_hostname, int mdr_port) throws IOException {
         super(0); // required to avoid the 'rmic' step, see below
@@ -35,7 +36,63 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         this.mdr.setTimeToLive(1);
         this.mdr.setLoopbackMode(false); // Change?
 
-        // TODO: Lançar threads de escuta
+        listenCommunicationChannel();
+        listenDataBackupChannel();
+        listenDataRestoreChannel();
+    }
+
+    private void listenCommunicationChannel() {
+        DatagramPacket packet = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE); // TODO: Update values
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        mc.receive(packet);
+
+                        System.out.println("Communication Channel message");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private void listenDataBackupChannel() {
+        DatagramPacket packet = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE); // TODO: Update values
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        mdb.receive(packet);
+
+                        System.out.println("Databackup Channel message");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private void listenDataRestoreChannel() {
+        DatagramPacket packet = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE); // TODO: Update values
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        mdr.receive(packet);
+
+                        System.out.println("Datarestore Channel message");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
     public static void main(String args[]) throws Exception {
