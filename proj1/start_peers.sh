@@ -7,7 +7,7 @@ cd $(dirname $0)
 FULL_PATH="$(pwd -P)"
 
 CLASS_PATH="/out/production/proj1"
-PEER_CLASS="Peer"
+PEER_CLASS="PeerMain"
 
 PEER_PREFIX="Peer-"
 
@@ -41,7 +41,6 @@ MDC_HOSTNAME="228.25.25.25"
 MDC_PORT="8825"
 
 for (( i = 0; i < $1; i++ )); do
-
     # i3 tiling, ignore
     if [[ -n ${TILE_COLS+x} ]]; then
         col=$((i % TILE_COLS))
@@ -51,7 +50,7 @@ for (( i = 0; i < $1; i++ )); do
 	    elif [[ $col == $((TILE_COLS-1)) ]]; then
 	        i3-msg -q focus parent
 	        i3-msg -q split v
-	        echo newrow
+	        # echo newrow
 	    fi
     fi
 
