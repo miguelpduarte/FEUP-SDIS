@@ -23,8 +23,6 @@ public class MessageFactory {
         System.arraycopy(header, 0, output, 0, header.length);
         System.arraycopy(body, 0, output, header.length, body.length);
 
-        System.out.println("ripini " + new String(output, 0, output.length));
-
         return output;
     }
 
@@ -36,6 +34,14 @@ public class MessageFactory {
             hash = digest.digest(file_name.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException ignored) {
         }
-        return new String(hash, 0, hash.length);
+
+        byte[] processed_hash = new byte[64];
+
+        for (int i = 0; i < 32; i++) {
+            processed_hash[2*i] = (byte) ((hash[i] & 0xF0) >> 4);
+            processed_hash[(2*i)+1] = (byte) (hash[i] & 0x0F);
+        }
+
+        return new String(processed_hash, 0, processed_hash.length);
     }
 }
