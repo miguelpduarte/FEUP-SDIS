@@ -1,3 +1,6 @@
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class MessageFactory {
@@ -20,12 +23,19 @@ public class MessageFactory {
         System.arraycopy(header, 0, output, 0, header.length);
         System.arraycopy(body, 0, output, header.length, body.length);
 
-        System.out.println("ripini " + Arrays.toString(output));
+        System.out.println("ripini " + new String(output, 0, output.length));
 
         return output;
     }
 
     private static String filenameEncode(String file_name) {
-        return file_name;
+        MessageDigest digest;
+        byte[] hash = new byte[0];
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            hash = digest.digest(file_name.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException ignored) {
+        }
+        return new String(hash, 0, hash.length);
     }
 }
