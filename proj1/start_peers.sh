@@ -13,7 +13,7 @@ PEER_PREFIX="Peer-"
 
 if ! [[ $1 =~ $NUMBER_REGEX ]]; then
     echo "Error: The number of peers must be a positive integer!"
-    echo "Usage: $0 n_peers [--TILE_COLS [n_cols]]"
+    echo "Usage: $0 n_peers [--tile [n_cols]]"
     exit 1
 fi
 
