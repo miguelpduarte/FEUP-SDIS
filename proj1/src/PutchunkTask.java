@@ -44,14 +44,14 @@ public class PutchunkTask implements Task {
         }
 
         try {
-            System.out.printf("Sending Putchunk message for fileid '%s' and chunk_no '%d' - attempt #%d\n", this.file_id, this.chunk_no, this.current_attempt);
+            System.out.printf("Sending Putchunk message for fileid '%s' and chunk_no '%d' - attempt #%d\n", this.file_id, this.chunk_no, this.current_attempt + 1);
             ChannelManager.getInstance().getBackup().broadcast(this.message);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         this.next_action = ThreadManager.getInstance().executeLater(() -> {
-            System.out.println("Did not get reply for the current delay, trying again");
+            //System.out.println("Did not get reply for the current delay, trying again");
             // System.out.printf("Last delay: %d\n", ProtocolDefinitions.MESSAGE_DELAYS[this.current_attempt]);
             this.current_attempt++;
             this.communicate();
