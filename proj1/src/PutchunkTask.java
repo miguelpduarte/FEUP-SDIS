@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.concurrent.ScheduledFuture;
 
 public class PutchunkTask implements Task {
@@ -6,6 +7,7 @@ public class PutchunkTask implements Task {
     private final String file_id;
     private final int chunk_no;
     private final int replication_deg;
+    private final HashSet<String> replicators;
     private int current_attempt;
     private ScheduledFuture next_action;
 
@@ -14,6 +16,7 @@ public class PutchunkTask implements Task {
         this.chunk_no = chunk_no;
         this.replication_deg = replication_deg;
         this.current_attempt = 0;
+        this.replicators = new HashSet<String>();
 
         //TODO Discuss:
         // Currently the filename enconding is being duplicated - both in createPutchunkMessage and in the first line of this constructor - should this be changed?
@@ -24,15 +27,31 @@ public class PutchunkTask implements Task {
     }
 
     @Override
-    public void notify(CommonMessage msg) {
+    public synchronized void notify(CommonMessage msg) {
         if (msg.getMessageType() != ProtocolDefinitions.MessageType.STORED) {
-            System.out.println("DBG: Message was not stored! Oops!");
+            System.out.println("DBG: Message was not of type STORED! Oops!");
             return;
         }
 
-        System.out.println("Notified of STORED message!");
+        if (msg.getChunkNo() != this.chunk_no || !msg.getFileId().equals(this.file_id)) {
+            System.out.println("DBG: Message was not for this specific task, hmm");
+            return;
+        }
 
-        //TODO implement this
+        System.out.println("DBG: Notified of STORED message!");
+
+        if (this.replicators.contains(msg.getSenderId())) {
+            System.out.println("DBG: Repeated replicator!");
+            return;
+        }
+
+        this.replicators.add(msg.getSenderId());
+
+        if (this.replicators.size() >= this.replication_deg) {
+            System.out.println("DBG: Replication minimum reached! Stopping future messages and unregistering task!");
+            this.next_action.cancel(true);
+            TaskManager.getInstance().unregisterTask(this);
+        }
     }
 
     @Override
