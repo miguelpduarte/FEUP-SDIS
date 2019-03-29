@@ -6,9 +6,6 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         super(0); // required to avoid the 'rmic' step, see below
 
         createChannelHandlers(mc_hostname, mc_port, mdb_hostname, mdb_port, mdr_hostname, mdr_port);
-        createMcHandler(mc_hostname, mc_port);
-        createMdbChannel(mdb_hostname, mdb_port);
-        createMdrChannel(mdr_hostname, mdr_port);
     }
 
     private void createChannelHandlers(String mc_hostname, int mc_port, String mdb_hostname, int mdb_port, String mdr_hostname, int mdr_port) throws IOException {
