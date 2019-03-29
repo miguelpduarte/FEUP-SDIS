@@ -53,6 +53,22 @@ public class MessageFactory {
         return sb.toString();
     }
 
+    public static byte[] createStoredMessage(String file_id, int chunk_no) {
+        // NOTE: The argument is file_id and not file_name, thus it is considered pre-processed (via filenameEncode)
+        // This consideration is due to the fact that this message is always created as a reply so the original filename does not even exist
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("STORED").append(" ");
+        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
+        sb.append(file_id).append(" ");
+        sb.append(chunk_no).append(" ");
+        sb.append(CRLF).append(CRLF);
+
+        return sb.toString().getBytes();
+    }
+
     public static CommonMessage getBasicInfo(byte[] message) {
         int crlf_index = getCRLFIndex(message);
         if (crlf_index == -1) {
