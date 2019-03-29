@@ -10,7 +10,6 @@ public class BackupChannelHandler extends ChannelHandler {
         final byte[] packet_data = this.packet.getData();
 
         ThreadManager.getInstance().executeLater(() -> {
-            System.out.println("\t\tMDB: Starting message handling");
             CommonMessage info = MessageFactory.getBasicInfo(packet_data);
             if (info == null) {
                 System.out.println("MDB: Message couldn't be parsed");
