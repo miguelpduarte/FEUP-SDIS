@@ -1,3 +1,11 @@
+package base.tasks;
+
+import base.ProtocolDefinitions;
+import base.ThreadManager;
+import base.channels.ChannelManager;
+import base.messages.CommonMessage;
+import base.messages.MessageFactory;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.concurrent.ScheduledFuture;
@@ -22,7 +30,7 @@ public class PutchunkTask implements Task {
         // Currently the filename enconding is being duplicated - both in createPutchunkMessage and in the first line of this constructor - should this be changed?
         this.message = MessageFactory.createPutchunkMessage(file_name, chunk_no, replication_deg, body);
 
-        // Kickstarting the communication "loop"
+        // Kickstarting the channels "loop"
         ThreadManager.getInstance().executeLater(this::communicate);
     }
 
@@ -57,7 +65,7 @@ public class PutchunkTask implements Task {
     @Override
     public void communicate() {
         if (this.current_attempt >= ProtocolDefinitions.MESSAGE_DELAYS.length) {
-            System.out.printf("Maximum retries reached for PutchunkTask for fileid '%s' and chunk_no '%d'\n", this.file_id, this.chunk_no);
+            System.out.printf("Maximum retries reached for PutchunkTaskkTask for fileid '%s' and chunk_no '%d'\n", this.file_id, this.chunk_no);
             TaskManager.getInstance().unregisterTask(this);
             return;
         }

@@ -7,7 +7,7 @@ cd $(dirname $0)
 FULL_PATH="$(pwd -P)"
 
 CLASS_PATH="/out/production/proj1"
-PEER_CLASS="PeerMain"
+PEER_CLASS="base.PeerMain"
 
 PEER_PREFIX="Peer-"
 

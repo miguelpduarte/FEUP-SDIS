@@ -1,3 +1,7 @@
+package base.tasks;
+
+import base.Keyable;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TaskManager {

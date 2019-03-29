@@ -1,3 +1,8 @@
+package base.messages;
+
+import base.Keyable;
+import base.ProtocolDefinitions;
+
 public class CommonMessage implements Keyable {
     private final ProtocolDefinitions.MessageType message_type;
     private final String version;

@@ -1,3 +1,7 @@
+package base.messages;
+
+import base.ProtocolDefinitions;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

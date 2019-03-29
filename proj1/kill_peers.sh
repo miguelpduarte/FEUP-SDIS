@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 
-pkill -f "java.*Peer"
+pkill -f "*.Peer"

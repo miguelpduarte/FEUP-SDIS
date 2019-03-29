@@ -1,3 +1,12 @@
+package base;
+
+import base.channels.BackupChannelHandler;
+import base.channels.ChannelManager;
+import base.channels.ControlChannelHandler;
+import base.channels.RestoreChannelHandler;
+import base.tasks.PutchunkTask;
+import base.tasks.TaskManager;
+
 import java.io.IOException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -43,7 +52,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         // 1 - Send dummy PutchunkMessage to test the timing out with delays
         // 2 - Test that other channels receive the message
 
-        // Testing by creating a dummy PutchunkTask that will autonomously communicate:
+        // Testing by creating a dummy tasksPutchunkTask that will autonomously communicate:
         TaskManager.getInstance().registerTask(new PutchunkTask(filename, 1, 3, new byte[] {'A', 'B', 'Z', 'K', 'k', '0'}));
 
         return 0;

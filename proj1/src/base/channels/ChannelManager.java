@@ -1,3 +1,5 @@
+package base.channels;
+
 public class ChannelManager {
     private static ChannelManager instance = new ChannelManager();
     private ChannelHandler control;
