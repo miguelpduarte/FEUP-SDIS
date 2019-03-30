@@ -35,7 +35,7 @@ public class PutchunkTask implements Task {
     }
 
     @Override
-    public synchronized void notify(CommonMessage msg) {
+    public void notify(CommonMessage msg) {
         if (msg.getMessageType() != ProtocolDefinitions.MessageType.STORED) {
             System.out.println("DBG: Message was not of type STORED! Oops!");
             return;
@@ -48,17 +48,16 @@ public class PutchunkTask implements Task {
 
         System.out.println("DBG: Notified of STORED message!");
 
-        if (this.replicators.contains(msg.getSenderId())) {
-            System.out.println("DBG: Repeated replicator!");
-            return;
-        }
+        System.out.printf("DBG: Registering %s as a replicator\n", msg.getSenderId());
 
-        this.replicators.add(msg.getSenderId());
-
-        if (this.replicators.size() >= this.replication_deg) {
-            System.out.println("DBG: Replication minimum reached! Stopping future messages and unregistering task!");
-            this.next_action.cancel(true);
-            TaskManager.getInstance().unregisterTask(this);
+        synchronized (this) {
+            this.replicators.add(msg.getSenderId());
+            System.out.printf("DBG: Registered %s as a replicator successfully\n", msg.getSenderId());
+            if (this.replicators.size() >= this.replication_deg) {
+                System.out.println("DBG: Replication minimum reached! Stopping future messages and unregistering task!");
+                this.next_action.cancel(true);
+                TaskManager.getInstance().unregisterTask(this);
+            }
         }
     }
 
