@@ -1,5 +1,8 @@
 package base.storage;
 
+import base.ProtocolDefinitions;
+
+import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StorageManager {
@@ -21,6 +24,13 @@ public class StorageManager {
     public void initStorage() {
         // Create the directories for this peer (see Moodle):
         // peerX/backup and peerX/restored
+        final String peer_dirname = String.format("peer%s", ProtocolDefinitions.SERVER_ID);
+        final String backup_dirname = peer_dirname + "/" + ProtocolDefinitions.BACKUP_DIRNAME + "/";
+        final String restored_dirname = peer_dirname + "/" + ProtocolDefinitions.RESTORED_DIRNAME + "/";
+
+        // Creating the actual directories:
+        new File(backup_dirname).mkdirs();
+        new File(restored_dirname).mkdirs();
     }
 
     public boolean storeChunk(String file_id, int chunkno, byte[] data) {
