@@ -53,7 +53,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         // 2 - Test that other channels receive the message
 
         // Testing by creating a dummy tasksPutchunkTask that will autonomously communicate:
-        TaskManager.getInstance().registerTask(new PutchunkTask(filename, 1, 3, new byte[] {'A', 'B', 'Z', 'K', 'k', '0'}));
+        TaskManager.getInstance().registerTask(new PutchunkTask(filename, 1, replication_factor, new byte[] {'A', 'B', 'Z', 'K', 'k', '0'}));
 
         return 0;
     }

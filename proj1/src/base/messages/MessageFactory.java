@@ -7,9 +7,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class MessageFactory {
-    private final static String CRLF = "\r\n";
-    private final static byte CR = 0xD;
-    private final static byte LF = 0xA;
 
     public static byte[] createPutchunkMessage(String file_name, int chunk_no, int replication_degree, byte[] body) {
         StringBuilder sb = new StringBuilder();
@@ -20,7 +17,7 @@ public class MessageFactory {
         sb.append(filenameEncode(file_name)).append(" ");
         sb.append(chunk_no).append(" ");
         sb.append(replication_degree).append(" ");
-        sb.append(CRLF).append(CRLF);
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
 
         byte[] header = sb.toString().getBytes();
 
@@ -68,7 +65,7 @@ public class MessageFactory {
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
         sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
-        sb.append(CRLF).append(CRLF);
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
 
         return sb.toString().getBytes();
     }
@@ -95,7 +92,7 @@ public class MessageFactory {
 
     private static int getCRLFIndex(byte[] array) {
         for (int i = 0; i < array.length - 1; ++i) {
-            if (array[i] == CR && array[i + 1] == LF) {
+            if (array[i] == ProtocolDefinitions.CR && array[i + 1] == ProtocolDefinitions.LF) {
                 return i;
             }
         }

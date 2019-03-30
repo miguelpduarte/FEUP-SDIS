@@ -1,5 +1,6 @@
 package base.channels;
 
+import base.ProtocolDefinitions;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.ThreadManager;
@@ -19,6 +20,11 @@ public class RestoreChannelHandler extends ChannelHandler {
             CommonMessage info = MessageFactory.getBasicInfo(packet_data);
             if (info == null) {
                 System.out.println("MDR: Message couldn't be parsed");
+                return;
+            }
+
+            if (info.getSenderId().equals(ProtocolDefinitions.SERVER_ID)) {
+                // Own Message, ignoring
                 return;
             }
 

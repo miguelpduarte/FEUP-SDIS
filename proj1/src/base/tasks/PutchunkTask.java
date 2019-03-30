@@ -52,7 +52,7 @@ public class PutchunkTask implements Task {
 
         synchronized (this) {
             this.replicators.add(msg.getSenderId());
-            System.out.printf("DBG: Registered %s as a replicator successfully\n", msg.getSenderId());
+            System.out.printf("DBG: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
             if (this.replicators.size() >= this.replication_deg) {
                 System.out.println("DBG: Replication minimum reached! Stopping future messages and unregistering task!");
                 this.next_action.cancel(true);

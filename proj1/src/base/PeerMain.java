@@ -1,5 +1,7 @@
 package base;
 
+import base.storage.StorageManager;
+
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -49,5 +51,8 @@ public class PeerMain {
         }
 
         System.out.printf("Registered object instance to access point '%s'.\n", service_access_point);
+
+        StorageManager.getInstance().initStorage();
+        System.out.println("Storage initialized");
     }
 }

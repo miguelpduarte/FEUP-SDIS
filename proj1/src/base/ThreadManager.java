@@ -2,6 +2,7 @@ package base;
 
 import java.util.concurrent.*;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class ThreadManager {
@@ -24,5 +25,9 @@ public class ThreadManager {
 
     public ScheduledFuture executeLater(Runnable r, long seconds) {
         return this.scheduled_executor.schedule(r, seconds, SECONDS);
+    }
+
+    public ScheduledFuture executeLaterMilis(Runnable r, long milliseconds) {
+        return this.scheduled_executor.schedule(r, milliseconds, MILLISECONDS);
     }
 }

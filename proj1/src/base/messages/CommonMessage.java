@@ -3,6 +3,8 @@ package base.messages;
 import base.Keyable;
 import base.ProtocolDefinitions;
 
+import java.util.Arrays;
+
 public class CommonMessage implements Keyable {
     private final ProtocolDefinitions.MessageType message_type;
     private final String version;
@@ -52,5 +54,17 @@ public class CommonMessage implements Keyable {
 
     public String toKey() {
         return message_type.name() + file_id + chunk_no;
+    }
+
+    /**
+     * For usage in reading the body of the message for storing in PUTCHUNK and CHUNK messages for example
+     * @return The message body
+     */
+    public byte[] getBody() throws InvalidMessageFormatException {
+        if (this.message.length > this.crlf_index + 3 && this.message[this.crlf_index+2] == ProtocolDefinitions.CR && this.message[this.crlf_index+3] == ProtocolDefinitions.LF) {
+            return Arrays.copyOfRange(this.message, this.crlf_index+3, this.message.length);
+        }
+
+        throw new InvalidMessageFormatException();
     }
 }
