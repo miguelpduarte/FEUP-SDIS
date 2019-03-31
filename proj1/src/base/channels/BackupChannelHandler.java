@@ -1,10 +1,10 @@
 package base.channels;
 
 import base.ProtocolDefinitions;
+import base.ThreadManager;
 import base.messages.CommonMessage;
 import base.messages.InvalidMessageFormatException;
 import base.messages.MessageFactory;
-import base.ThreadManager;
 import base.storage.StorageManager;
 
 import java.io.IOException;
@@ -43,7 +43,10 @@ public class BackupChannelHandler extends ChannelHandler {
                         final String file_id = info.getFileId();
                         final int chunk_no = info.getChunkNo();
 
-                        StorageManager.getInstance().storeChunk(file_id, chunk_no, body);
+                        if (!StorageManager.getInstance().storeChunk(file_id, chunk_no, body)) {
+                            System.out.printf("Storage of file id '%s' and chunk no '%d' was unsuccessful, aborting\n", file_id, chunk_no);
+                            return;
+                        }
                         final byte[] stored_message = MessageFactory.createStoredMessage(file_id, chunk_no);
 
                         System.out.printf("Stored file id '%s' - chunk no '%d' -> prepared reply STORED message and will make it broadcast after a random delay\n", file_id, chunk_no);

@@ -12,7 +12,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Peer extends UnicastRemoteObject implements IPeer {
     public Peer(String mc_hostname, int mc_port, String mdb_hostname, int mdb_port, String mdr_hostname, int mdr_port) throws IOException {
-        super(0); // required to avoid the 'rmic' step, see below
+        super(0); // required to avoid the 'rmic' step, see PeerMain.main
 
         createChannelHandlers(mc_hostname, mc_port, mdb_hostname, mdb_port, mdr_hostname, mdr_port);
     }
@@ -53,7 +53,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         // 2 - Test that other channels receive the message
 
         // Testing by creating a dummy tasksPutchunkTask that will autonomously communicate:
-        TaskManager.getInstance().registerTask(new PutchunkTask(filename, 1, replication_factor, new byte[] {'A', 'B', 'Z', 'K', 'k', '0'}));
+        TaskManager.getInstance().registerTask(new PutchunkTask(filename, 1, replication_factor, new byte[] {'A', 'B', 'Z', 'K', '\n', 'k', 'b', '2', '2', '\0'}));
 
         return 0;
     }

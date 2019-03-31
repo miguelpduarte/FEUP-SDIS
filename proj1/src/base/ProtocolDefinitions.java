@@ -19,8 +19,8 @@ public class ProtocolDefinitions {
 
     public static final int[] MESSAGE_DELAYS = {1, 2, 4, 8};
 
-    public static final int MIN_RANDOM_MESSAGE_DELAY_MILIS = 0;
-    public static final int MAX_RANDOM_MESSAGE_DELAY_MILIS = 400;
+    private static final int MIN_RANDOM_MESSAGE_DELAY_MILIS = 0;
+    private static final int MAX_RANDOM_MESSAGE_DELAY_MILIS = 400;
 
     public static int getRandomMessageDelayMilis() {
         return ThreadLocalRandom.current().nextInt(MIN_RANDOM_MESSAGE_DELAY_MILIS, MAX_RANDOM_MESSAGE_DELAY_MILIS+1);

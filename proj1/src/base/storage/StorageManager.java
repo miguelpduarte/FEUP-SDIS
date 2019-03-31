@@ -2,11 +2,13 @@ package base.storage;
 
 import base.ProtocolDefinitions;
 
-import java.io.File;
+import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StorageManager {
     private static StorageManager instance = new StorageManager();
+    private String backup_dirname;
+    private String restored_dirname;
 
     public static StorageManager getInstance() {
         return instance;
@@ -25,12 +27,12 @@ public class StorageManager {
         // Create the directories for this peer (see Moodle):
         // peerX/backup and peerX/restored
         final String peer_dirname = String.format("peer%s", ProtocolDefinitions.SERVER_ID);
-        final String backup_dirname = peer_dirname + "/" + ProtocolDefinitions.BACKUP_DIRNAME + "/";
-        final String restored_dirname = peer_dirname + "/" + ProtocolDefinitions.RESTORED_DIRNAME + "/";
+        this.backup_dirname = peer_dirname + "/" + ProtocolDefinitions.BACKUP_DIRNAME + "/";
+        this.restored_dirname = peer_dirname + "/" + ProtocolDefinitions.RESTORED_DIRNAME + "/";
 
         // Creating the actual directories:
-        new File(backup_dirname).mkdirs();
-        new File(restored_dirname).mkdirs();
+        new File(this.backup_dirname).mkdirs();
+        new File(this.restored_dirname).mkdirs();
     }
 
     public boolean storeChunk(String file_id, int chunkno, byte[] data) {
@@ -39,7 +41,7 @@ public class StorageManager {
         // This method does not need to be synchronized since the threads will always write to separate files and the concurrent accesses
         // to class fields are being done using a ConcurrentHashMap so it should be fine
 
-        String file_chunk_hash = String.format("%s_chk%d", file_id, chunkno);
+        final String file_chunk_hash = String.format("%s_chk%d", file_id, chunkno);
         if (this.stored_chunks.containsKey(file_chunk_hash)) {
             System.out.printf("DBG:StorageManager.storeChunk::The file chunk with hash '%s' was already stored in the System :)\n", file_chunk_hash);
             return true;
@@ -47,11 +49,51 @@ public class StorageManager {
 
         System.out.printf("DBG:StorageManager.storeChunk::Storing the file with hash '%s'\n", file_chunk_hash);
 
-        // TODO: Actually store it!
+        // Ensuring that the parent directories exist so that the FileOutputStream can create the file correctly
+        final String chunk_parent_dir = String.format("%s/%s/", this.backup_dirname, file_id);
+        new File(chunk_parent_dir).mkdirs();
 
-        this.stored_chunks.put(file_chunk_hash, CHUNK_STORED);
+        final String chunk_path = String.format("%schk%d", chunk_parent_dir, chunkno);
 
-        // TODO: Actually return based on the success or not
-        return true;
+        try (FileOutputStream fos = new FileOutputStream(chunk_path)) {
+            fos.write(data);
+            //fos.close(); There is unnecessary since the instance of "fos" is created inside a try-with-resources statement, which will automatically close the FileOutputStream in case of failure
+            // See https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
+            this.stored_chunks.put(file_chunk_hash, CHUNK_STORED);
+            return true;
+        } catch (IOException e) {
+            System.out.printf("DBG:StorageManager.storeChunk::Error in storing file chunk with hash '%s'\n", file_chunk_hash);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static byte[] readFromFile(String file_path) throws IOException {
+        // See https://stackoverflow.com/questions/858980/file-to-byte-in-java
+
+        File f = new File(file_path);
+        long file_size = f.length();
+
+        // Arrays in Java have to be created using int and not long
+        // Thus, checking if there is no "size overflow"
+        if (file_size > Integer.MAX_VALUE) {
+            throw new IOException("File too large to read into a byte array!");
+        }
+
+        byte[] file_data = new byte[(int) file_size];
+
+        try (FileInputStream is = new FileInputStream(f)) {
+            int offset = 0, n_bytes_read = 0;
+            while (offset < file_data.length && (n_bytes_read = is.read(file_data, offset, file_data.length - offset)) >= 0) {
+                offset += n_bytes_read;
+            }
+
+            // Ensuring that all of the bytes have been read
+            if (offset < file_data.length) {
+                throw new IOException("Could not read full contents of file " + file_path);
+            }
+
+            return file_data;
+        }
     }
 }
