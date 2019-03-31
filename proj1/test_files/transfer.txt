@@ -1,0 +1,7 @@
+This file has some text data that should be backed up
+
+Make sure that no line is missed
+
+Not even this one
+
+Or this text: Lorem ipsum dolor sit amet

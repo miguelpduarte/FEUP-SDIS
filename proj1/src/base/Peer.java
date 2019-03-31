@@ -4,6 +4,7 @@ import base.channels.BackupChannelHandler;
 import base.channels.ChannelManager;
 import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
+import base.storage.StorageManager;
 import base.tasks.PutchunkTask;
 import base.tasks.TaskManager;
 
@@ -48,12 +49,17 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("Peer.backup");
         System.out.println("filename = [" + filename + "], replication_factor = [" + replication_factor + "]");
 
-        // TODO:
-        // 1 - Send dummy PutchunkMessage to test the timing out with delays
-        // 2 - Test that other channels receive the message
+        // TODO: Start splitting the file into chunks instead of just sending one chunk (current state)
 
         // Testing by creating a dummy tasksPutchunkTask that will autonomously communicate:
-        TaskManager.getInstance().registerTask(new PutchunkTask(filename, 1, replication_factor, new byte[] {'A', 'B', 'Z', 'K', '\n', 'k', 'b', '2', '2', '\0'}));
+        try {
+            byte[] file_data = StorageManager.readFromFile(filename);
+            System.out.printf("Read file for backup (%s) successfully!\n", filename);
+            TaskManager.getInstance().registerTask(new PutchunkTask(filename, 0, replication_factor, file_data));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
 
         return 0;
     }
