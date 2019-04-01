@@ -11,13 +11,11 @@ public abstract class ChannelHandler implements Runnable {
     private static final int PACKET_SIZE = 1024; // TODO: Update value
     private final String hostname;
     private final int port;
-    private final String channel_identifier;
 
-    public ChannelHandler(String hostname, int port, String channel_identifier) throws IOException {
+    public ChannelHandler(String hostname, int port) throws IOException {
         this.hostname = hostname;
         this.port = port;
 
-        this.channel_identifier = channel_identifier;
         this.packet = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
         this.channel_socket = new MulticastSocket(port);
         this.channel_socket.joinGroup(InetAddress.getByName(hostname));
@@ -30,7 +28,6 @@ public abstract class ChannelHandler implements Runnable {
         while (true) {
             try {
                 channel_socket.receive(packet);
-                System.out.println(channel_identifier + " received message");
                 this.handle();
             } catch (IOException e) {
                 e.printStackTrace();

@@ -70,7 +70,7 @@ public class MessageFactory {
         return sb.toString().getBytes();
     }
 
-    public static CommonMessage getBasicInfo(byte[] message) {
+    public static CommonMessage getBasicInfo(byte[] message, int msg_length) {
         int crlf_index = getCRLFIndex(message);
         if (crlf_index == -1) {
             return null;
@@ -86,7 +86,8 @@ public class MessageFactory {
                 header_fields[3],
                 Integer.parseInt(header_fields[4]),
                 crlf_index,
-                message
+                message,
+                msg_length
         );
     }
 

@@ -9,15 +9,17 @@ import java.io.IOException;
 
 public class RestoreChannelHandler extends ChannelHandler {
     public RestoreChannelHandler(String hostname, int port) throws IOException {
-        super(hostname, port, "Restore");
+        super(hostname, port);
     }
 
     @Override
     protected void handle() {
         final byte[] packet_data = this.packet.getData();
+        final int packet_length = this.packet.getLength();
+
 
         ThreadManager.getInstance().executeLater(() -> {
-            CommonMessage info = MessageFactory.getBasicInfo(packet_data);
+            CommonMessage info = MessageFactory.getBasicInfo(packet_data, packet_length);
             if (info == null) {
                 System.out.println("MDR: Message couldn't be parsed");
                 return;

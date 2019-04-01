@@ -3,6 +3,7 @@ package base.storage;
 import base.ProtocolDefinitions;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StorageManager {
@@ -35,19 +36,14 @@ public class StorageManager {
         new File(this.restored_dirname).mkdirs();
     }
 
-    public boolean storeChunk(String file_id, int chunkno, byte[] data) {
-        System.out.println("StorageManager.storeChunk");
-        // TODO Discuss to confirm:
-        // This method does not need to be synchronized since the threads will always write to separate files and the concurrent accesses
-        // to class fields are being done using a ConcurrentHashMap so it should be fine
-
+    public boolean storeChunk(String file_id, int chunkno, byte[] data, int data_length) {
         final String file_chunk_hash = String.format("%s_chk%d", file_id, chunkno);
         if (this.stored_chunks.containsKey(file_chunk_hash)) {
-            System.out.printf("DBG:StorageManager.storeChunk::The file chunk with hash '%s' was already stored in the System :)\n", file_chunk_hash);
+            System.out.printf("DBG:StorageManager.storeChunk::The file chunk with hash '%s' was already stored\n", file_chunk_hash);
             return true;
         }
 
-        System.out.printf("DBG:StorageManager.storeChunk::Storing the file with hash '%s'\n", file_chunk_hash);
+        System.out.printf("StorageManager.storeChunk::Storing the file with hash '%s'\n", file_chunk_hash);
 
         // Ensuring that the parent directories exist so that the FileOutputStream can create the file correctly
         final String chunk_parent_dir = String.format("%s/%s/", this.backup_dirname, file_id);
@@ -56,13 +52,13 @@ public class StorageManager {
         final String chunk_path = String.format("%schk%d", chunk_parent_dir, chunkno);
 
         try (FileOutputStream fos = new FileOutputStream(chunk_path)) {
-            fos.write(data);
+            fos.write(data, 0, data_length);
             //fos.close(); There is unnecessary since the instance of "fos" is created inside a try-with-resources statement, which will automatically close the FileOutputStream in case of failure
             // See https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
             this.stored_chunks.put(file_chunk_hash, CHUNK_STORED);
             return true;
         } catch (IOException e) {
-            System.out.printf("DBG:StorageManager.storeChunk::Error in storing file chunk with hash '%s'\n", file_chunk_hash);
+            System.out.printf("StorageManager.storeChunk::Error in storing file chunk with hash '%s'\n", file_chunk_hash);
             e.printStackTrace();
             return false;
         }
@@ -83,7 +79,7 @@ public class StorageManager {
         byte[] file_data = new byte[(int) file_size];
 
         try (FileInputStream is = new FileInputStream(f)) {
-            int offset = 0, n_bytes_read = 0;
+            int offset = 0, n_bytes_read;
             while (offset < file_data.length && (n_bytes_read = is.read(file_data, offset, file_data.length - offset)) >= 0) {
                 offset += n_bytes_read;
             }

@@ -11,15 +11,16 @@ import java.io.IOException;
 
 public class BackupChannelHandler extends ChannelHandler {
     public BackupChannelHandler(String hostname, int port) throws IOException {
-        super(hostname, port, "Backup");
+        super(hostname, port);
     }
 
     @Override
     protected void handle() {
         final byte[] packet_data = this.packet.getData();
+        final int packet_length = this.packet.getLength();
 
         ThreadManager.getInstance().executeLater(() -> {
-            CommonMessage info = MessageFactory.getBasicInfo(packet_data);
+            CommonMessage info = MessageFactory.getBasicInfo(packet_data, packet_length);
             if (info == null) {
                 System.out.println("MDB: Message couldn't be parsed");
                 return;
@@ -42,8 +43,9 @@ public class BackupChannelHandler extends ChannelHandler {
                         final byte[] body = info.getBody();
                         final String file_id = info.getFileId();
                         final int chunk_no = info.getChunkNo();
+                        final int body_length = info.getBodyLength();
 
-                        if (!StorageManager.getInstance().storeChunk(file_id, chunk_no, body)) {
+                        if (!StorageManager.getInstance().storeChunk(file_id, chunk_no, body, body_length)) {
                             System.out.printf("Storage of file id '%s' and chunk no '%d' was unsuccessful, aborting\n", file_id, chunk_no);
                             return;
                         }
