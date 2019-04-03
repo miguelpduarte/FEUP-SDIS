@@ -1,5 +1,7 @@
 package base.channels;
 
+import base.ProtocolDefinitions;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -8,7 +10,7 @@ import java.net.MulticastSocket;
 public abstract class ChannelHandler implements Runnable {
     protected final DatagramPacket packet;
     protected final MulticastSocket channel_socket;
-    private static final int PACKET_SIZE = 1024; // TODO: Update value
+    private static final int PACKET_SIZE = ProtocolDefinitions.CHUNK_MAX_SIZE_BYTES + ProtocolDefinitions.HEADER_MAX_BYTES;
     private final String hostname;
     private final int port;
 

@@ -2,8 +2,10 @@ package base.storage;
 
 import base.ProtocolDefinitions;
 
-import java.io.*;
-import java.util.Arrays;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StorageManager {
@@ -34,6 +36,8 @@ public class StorageManager {
         // Creating the actual directories:
         new File(this.backup_dirname).mkdirs();
         new File(this.restored_dirname).mkdirs();
+
+        //TODO: Check already stored chunks and insert that data into this.stored_chunks
     }
 
     public boolean storeChunk(String file_id, int chunkno, byte[] data, int data_length) {

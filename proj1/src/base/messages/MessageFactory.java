@@ -1,20 +1,53 @@
 package base.messages;
 
+import base.FileTooLargeException;
 import base.ProtocolDefinitions;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class MessageFactory {
 
-    public static byte[] createPutchunkMessage(String file_name, int chunk_no, int replication_degree, byte[] body) {
+    public static byte[][] splitFileContents(byte[] file_data) throws FileTooLargeException {
+        System.out.println("file_data.length = " + file_data.length);
+
+        int num_chunks = (int) Math.ceil((float) file_data.length / ProtocolDefinitions.CHUNK_MAX_SIZE_BYTES);
+        if (num_chunks > ProtocolDefinitions.MAX_CHUNKS) {
+            throw new FileTooLargeException();
+        }
+
+        System.out.println("num_chunks = " + num_chunks);
+
+        byte[][] split_file_contents = new byte[num_chunks][];
+
+        int current_byte = 0;
+        int chunk_size;
+
+        for (int i = 0; i < num_chunks; ++i) {
+            chunk_size = Math.min(ProtocolDefinitions.CHUNK_MAX_SIZE_BYTES, file_data.length - current_byte);
+
+            split_file_contents[i] = Arrays.copyOfRange(
+                    file_data,
+                    current_byte,
+                    current_byte + chunk_size
+            );
+
+            current_byte += chunk_size;
+        }
+
+        return split_file_contents;
+    }
+
+
+    public static byte[] createPutchunkMessage(String file_id, int chunk_no, int replication_degree, byte[] body) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("PUTCHUNK").append(" ");
         sb.append(ProtocolDefinitions.VERSION).append(" ");
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
-        sb.append(filenameEncode(file_name)).append(" ");
+        sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
         sb.append(replication_degree).append(" ");
         sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
@@ -29,11 +62,13 @@ public class MessageFactory {
     }
 
     public static String filenameEncode(String file_name) {
+        final String text_to_encode = file_name + ProtocolDefinitions.SERVER_ID;
+
         MessageDigest digest;
         byte[] hash = new byte[0];
         try {
             digest = MessageDigest.getInstance("SHA-256");
-            hash = digest.digest(file_name.getBytes(StandardCharsets.UTF_8));
+            hash = digest.digest(text_to_encode.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException ignored) {
         }
 

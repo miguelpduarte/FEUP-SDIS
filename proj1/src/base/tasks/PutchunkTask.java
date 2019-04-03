@@ -24,10 +24,7 @@ public class PutchunkTask implements Task {
         this.chunk_no = chunk_no;
         this.replication_deg = replication_deg;
         this.current_attempt = 0;
-
-        //TODO Discuss:
-        // Currently the filename enconding is being duplicated - both in createPutchunkMessage and in the first line of this constructor - should this be changed?
-        this.message = MessageFactory.createPutchunkMessage(file_name, chunk_no, replication_deg, body);
+        this.message = MessageFactory.createPutchunkMessage(file_id, chunk_no, replication_deg, body);
 
         // Kickstarting the channels "loop"
         ThreadManager.getInstance().executeLater(this::communicate);
@@ -49,7 +46,8 @@ public class PutchunkTask implements Task {
             this.replicators.add(msg.getSenderId());
             System.out.printf("DBG: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
             if (this.replicators.size() >= this.replication_deg) {
-                System.out.println("DBG: Replication minimum reached! Stopping future messages and unregistering task!");
+                // System.out.println("DBG: Replication minimum reached! Stopping future messages and unregistering task!");
+                System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of at least '%d'\n", this.chunk_no, this.file_id, this.replication_deg);
                 this.next_action.cancel(true);
                 TaskManager.getInstance().unregisterTask(this);
             }

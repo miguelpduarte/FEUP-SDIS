@@ -4,12 +4,14 @@ import base.channels.BackupChannelHandler;
 import base.channels.ChannelManager;
 import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
+import base.messages.MessageFactory;
 import base.storage.StorageManager;
 import base.tasks.PutchunkTask;
 import base.tasks.TaskManager;
 
 import java.io.IOException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 
 public class Peer extends UnicastRemoteObject implements IPeer {
     public Peer(String mc_hostname, int mc_port, String mdb_hostname, int mdb_port, String mdr_hostname, int mdr_port) throws IOException {
@@ -49,15 +51,25 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("Peer.backup");
         System.out.println("filename = [" + filename + "], replication_factor = [" + replication_factor + "]");
 
-        // TODO: Start splitting the file into chunks instead of just sending one chunk (current state)
-
         // Testing by creating a dummy tasksPutchunkTask that will autonomously communicate:
         try {
             byte[] file_data = StorageManager.readFromFile(filename);
-            TaskManager.getInstance().registerTask(new PutchunkTask(filename, 0, replication_factor, file_data));
+            System.out.println("here");
+
+            byte[][] split_file_data = MessageFactory.splitFileContents(file_data);
+            System.out.println("here 2");
+            System.out.println("split_file_data = " + Arrays.deepToString(split_file_data));
+
+            for (int i = 0; i < split_file_data.length; ++i) {
+                System.out.println("i = " + i);
+                TaskManager.getInstance().registerTask(new PutchunkTask(filename, i, replication_factor, split_file_data[i]));
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return -1;
+        } catch (FileTooLargeException e) {
+            System.out.println("File is too large for storage in this distributed backup system!");
+            return -2;
         }
 
         return 0;

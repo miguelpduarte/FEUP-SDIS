@@ -28,4 +28,9 @@ public class ProtocolDefinitions {
 
     public static final String BACKUP_DIRNAME = "backup";
     public static final String RESTORED_DIRNAME = "restored";
+
+    // 10 for MsgType, 3 for Version, 16 for SenderId, 64 for FileId, 6 for ChunkNo, 1 for ReplicationDeg, 6 for spaces, 4 for CRLF (can be 1 or 2) - rounded up to 128
+    public static final int HEADER_MAX_BYTES = 128;
+    public static final int CHUNK_MAX_SIZE_BYTES = 64000;
+    public static final int MAX_CHUNKS = 1000000;
 }
