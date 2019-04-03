@@ -1,7 +1,6 @@
 package base.tasks;
 
 import base.ProtocolDefinitions;
-import base.ThreadManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 
@@ -16,11 +15,12 @@ public class PutchunkTask extends Task {
         super(file_name, chunk_no);
         this.body = body;
         this.replication_deg = replication_deg;
+        prepareMessage();
+        startCommuncation();
     }
 
     @Override
     protected byte[] createMessage() {
-        System.out.println("body = " + body);
         return MessageFactory.createPutchunkMessage(file_id, chunk_no, replication_deg, body);
     }
 

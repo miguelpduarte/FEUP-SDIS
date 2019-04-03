@@ -21,8 +21,6 @@ public abstract class Task implements Keyable {
         this.file_id = MessageFactory.filenameEncode(file_name);
         this.chunk_no = chunk_no;
         this.current_attempt = 0;
-        prepareMessage();
-        startCommuncation();
     }
 
     protected final void prepareMessage() {

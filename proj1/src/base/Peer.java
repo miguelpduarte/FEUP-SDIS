@@ -54,14 +54,10 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         // Testing by creating a dummy tasksPutchunkTask that will autonomously communicate:
         try {
             byte[] file_data = StorageManager.readFromFile(filename);
-            System.out.println("here");
-
             byte[][] split_file_data = MessageFactory.splitFileContents(file_data);
-            System.out.println("here 2");
-            System.out.println("split_file_data = " + Arrays.deepToString(split_file_data));
 
             for (int i = 0; i < split_file_data.length; ++i) {
-                System.out.println("i = " + i);
+                // System.out.println("i = " + i);
                 TaskManager.getInstance().registerTask(new PutchunkTask(filename, i, replication_factor, split_file_data[i]));
             }
         } catch (IOException e) {

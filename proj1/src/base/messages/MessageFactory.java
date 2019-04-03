@@ -40,6 +40,8 @@ public class MessageFactory {
             split_file_contents[num_chunks] = new byte[0];
         }
 
+        System.out.println("needs_empty_chunk = " + needs_empty_chunk);
+
         return split_file_contents;
     }
 

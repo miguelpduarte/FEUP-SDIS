@@ -10,6 +10,8 @@ import base.storage.Restorer;
 public class RestoreTask extends Task {
     public RestoreTask(String file_name, int chunk_no) {
         super(file_name, chunk_no);
+        prepareMessage();
+        startCommuncation();
     }
 
     @Override
