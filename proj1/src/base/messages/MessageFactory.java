@@ -11,16 +11,18 @@ import java.util.Arrays;
 public class MessageFactory {
 
     public static byte[][] splitFileContents(byte[] file_data) throws FileTooLargeException {
-        System.out.println("file_data.length = " + file_data.length);
-
         int num_chunks = (int) Math.ceil((float) file_data.length / ProtocolDefinitions.CHUNK_MAX_SIZE_BYTES);
         if (num_chunks > ProtocolDefinitions.MAX_CHUNKS) {
             throw new FileTooLargeException();
         }
 
-        System.out.println("num_chunks = " + num_chunks);
+        byte needs_empty_chunk = 0;
 
-        byte[][] split_file_contents = new byte[num_chunks][];
+        if (file_data.length % ProtocolDefinitions.CHUNK_MAX_SIZE_BYTES == 0) {
+            needs_empty_chunk = 1;
+        }
+
+        byte[][] split_file_contents = new byte[num_chunks + needs_empty_chunk][];
 
         int current_byte = 0;
         int chunk_size;
@@ -28,18 +30,31 @@ public class MessageFactory {
         for (int i = 0; i < num_chunks; ++i) {
             chunk_size = Math.min(ProtocolDefinitions.CHUNK_MAX_SIZE_BYTES, file_data.length - current_byte);
 
-            split_file_contents[i] = Arrays.copyOfRange(
-                    file_data,
-                    current_byte,
-                    current_byte + chunk_size
+            split_file_contents[i] = Arrays.copyOfRange(file_data, current_byte, current_byte + chunk_size
             );
 
             current_byte += chunk_size;
         }
 
+        if (needs_empty_chunk == 1) {
+            split_file_contents[num_chunks] = new byte[0];
+        }
+
         return split_file_contents;
     }
 
+    public static byte[] createGetchunkTask(String file_id, int chunk_no) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("GETCHUNK").append(" ");
+        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
+        sb.append(file_id).append(" ");
+        sb.append(chunk_no).append(" ");
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
+
+        return sb.toString().getBytes();
+    }
 
     public static byte[] createPutchunkMessage(String file_id, int chunk_no, int replication_degree, byte[] body) {
         StringBuilder sb = new StringBuilder();
@@ -103,6 +118,25 @@ public class MessageFactory {
         sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
 
         return sb.toString().getBytes();
+    }
+
+    public static byte[] createChunkMessage(String file_id, int chunk_no, byte[] body) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CHUNK").append(" ");
+        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
+        sb.append(file_id).append(" ");
+        sb.append(chunk_no).append(" ");
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
+
+        byte[] header = sb.toString().getBytes();
+
+        byte[] output = new byte[header.length + body.length];
+        System.arraycopy(header, 0, output, 0, header.length);
+        System.arraycopy(body, 0, output, header.length, body.length);
+
+        return output;
     }
 
     public static CommonMessage getBasicInfo(byte[] message, int msg_length) {

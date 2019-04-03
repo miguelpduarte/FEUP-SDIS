@@ -19,8 +19,8 @@ public class ThreadManager {
         this.scheduled_executor = new ScheduledThreadPoolExecutor(N_THREADS);
     }
 
-    public void executeLater(Runnable r) {
-        this.scheduled_executor.execute(r);
+    public Future executeLater(Runnable r) {
+        return this.scheduled_executor.submit(r);
     }
 
     public ScheduledFuture executeLater(Runnable r, long seconds) {

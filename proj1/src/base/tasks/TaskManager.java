@@ -7,8 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TaskManager {
     private static TaskManager instance = new TaskManager();
 
-    private ConcurrentHashMap<String, Task> tasks = new ConcurrentHashMap<>();
-    private int task_id = 0;
+    private final ConcurrentHashMap<String, Task> tasks = new ConcurrentHashMap<>();
 
     public static TaskManager getInstance() {
         return instance;
@@ -27,5 +26,10 @@ public class TaskManager {
 
     public void unregisterTask(Keyable k) {
         tasks.remove(k.toKey());
+    }
+
+    public void rekeyTask(Task t) {
+        this.unregisterTask(t);
+        this.registerTask(t);
     }
 }
