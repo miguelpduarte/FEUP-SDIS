@@ -39,33 +39,37 @@ public class BackupChannelHandler extends ChannelHandler {
             // It is already in a thread separate from the listening of messages and it must block until the file is backed up anyway...
             switch (info.getMessageType()) {
                 case PUTCHUNK:
-                    try {
-                        final byte[] body = info.getBody();
-                        final String file_id = info.getFileId();
-                        final int chunk_no = info.getChunkNo();
-                        final int body_length = info.getBodyLength();
-
-                        if (!StorageManager.getInstance().storeChunk(file_id, chunk_no, body, body_length)) {
-                            System.out.printf("Storage of file id '%s' and chunk no '%d' was unsuccessful, aborting\n", file_id, chunk_no);
-                            return;
-                        }
-                        final byte[] stored_message = MessageFactory.createStoredMessage(file_id, chunk_no);
-
-                        System.out.printf("Stored file id '%s' - chunk no '%d' -> prepared reply STORED message and will make it broadcast after a random delay\n", file_id, chunk_no);
-
-                        ThreadManager.getInstance().executeLaterMilis(() -> {
-                            try {
-                                System.out.printf("Broadcasting STORED for file id '%s' and chunk no '%d'\n", file_id, chunk_no);
-                                ChannelManager.getInstance().getControl().broadcast(stored_message);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }, ProtocolDefinitions.getRandomMessageDelayMilis());
-                    } catch (InvalidMessageFormatException e) {
-                        e.printStackTrace();
-                    }
+                    handlePutchunk(info);
                     break;
             }
         });
+    }
+
+    private void handlePutchunk(CommonMessage info) {
+        try {
+            final byte[] body = info.getBody();
+            final String file_id = info.getFileId();
+            final int chunk_no = info.getChunkNo();
+            final int body_length = info.getBodyLength();
+
+            if (!StorageManager.getInstance().storeChunk(file_id, chunk_no, body, body_length)) {
+                System.out.printf("Storage of file id '%s' and chunk no '%d' was unsuccessful, aborting\n", file_id, chunk_no);
+                return;
+            }
+            final byte[] stored_message = MessageFactory.createStoredMessage(file_id, chunk_no);
+
+            System.out.printf("Stored file id '%s' - chunk no '%d' -> prepared reply STORED message and will make it broadcast after a random delay\n", file_id, chunk_no);
+
+            ThreadManager.getInstance().executeLaterMilis(() -> {
+                try {
+                    System.out.printf("Broadcasting STORED for file id '%s' and chunk no '%d'\n", file_id, chunk_no);
+                    ChannelManager.getInstance().getControl().broadcast(stored_message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }, ProtocolDefinitions.getRandomMessageDelayMilis());
+        } catch (InvalidMessageFormatException e) {
+            e.printStackTrace();
+        }
     }
 }

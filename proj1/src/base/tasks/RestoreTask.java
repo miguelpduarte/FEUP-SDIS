@@ -1,6 +1,8 @@
 package base.tasks;
 
 import base.ProtocolDefinitions;
+import base.channels.ChannelHandler;
+import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.InvalidMessageFormatException;
 import base.messages.MessageFactory;
@@ -8,10 +10,18 @@ import base.storage.RestoreManager;
 import base.storage.Restorer;
 
 public class RestoreTask extends Task {
-    public RestoreTask(String file_name, int chunk_no) {
-        super(file_name, chunk_no);
+    private final String file_name;
+
+    public RestoreTask(String file_name) {
+        super(file_name, 0);
+        this.file_name = file_name;
+        initRestorer();
         prepareMessage();
         startCommuncation();
+    }
+
+    private void initRestorer() {
+        RestoreManager.getInstance().registerRestorer(new Restorer(this.file_name, this.file_id));
     }
 
     @Override
@@ -34,14 +44,15 @@ public class RestoreTask extends Task {
 
             assert r != null;
 
-            r.addChunk(msg_body);
             if (msg_body.length < ProtocolDefinitions.CHUNK_MAX_SIZE_BYTES) {
                 // Last chunk, unregister this task and eventually stop the Restorer that is running
                 this.unregister();
                 r.stopWriter();
+                r.addChunk(msg_body);
             } else {
+                r.addChunk(msg_body);
                 // Still have more chunks, increment chunk_no and reset number of retries.
-                // Then, re-key the task (to receive the correct messages) re-generate the message and restart communication
+                // Then, re-key the task (to receive the correct messages), re-generate the message and restart communication
                 this.chunk_no++;
                 this.current_attempt = 0;
                 TaskManager.getInstance().rekeyTask(this);
@@ -59,9 +70,11 @@ public class RestoreTask extends Task {
 
     @Override
     protected void handleMaxRetriesReached() {
-        super.handleMaxRetriesReached();
         System.out.printf("Maximum retries reached for RestoreTask for fileid '%s', at chunk_no '%d'\n", this.file_id, this.chunk_no);
-        RestoreManager.getInstance().getRestorer(() -> this.file_id).haltWriter();
+        this.unregister();
+        Restorer r = RestoreManager.getInstance().getRestorer(() -> this.file_id);
+        assert r != null;
+        r.haltWriter();
     }
 
     @Override
@@ -72,5 +85,10 @@ public class RestoreTask extends Task {
     @Override
     public String toKey() {
         return ProtocolDefinitions.MessageType.CHUNK.name() + file_id + chunk_no;
+    }
+
+    @Override
+    protected ChannelHandler getChannel() {
+        return ChannelManager.getInstance().getControl();
     }
 }

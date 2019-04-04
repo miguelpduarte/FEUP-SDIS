@@ -26,6 +26,10 @@ public class ProtocolDefinitions {
         return ThreadLocalRandom.current().nextInt(MIN_RANDOM_MESSAGE_DELAY_MILIS, MAX_RANDOM_MESSAGE_DELAY_MILIS+1);
     }
 
+    public static String calcChunkHash(String file_id, int chunk_no) {
+        return String.format("%s_chk%d", file_id, chunk_no);
+    }
+
     public static final String BACKUP_DIRNAME = "backup";
     public static final String RESTORED_DIRNAME = "restored";
 

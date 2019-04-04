@@ -3,6 +3,7 @@ package base.tasks;
 import base.Keyable;
 import base.ProtocolDefinitions;
 import base.ThreadManager;
+import base.channels.ChannelHandler;
 import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
@@ -11,7 +12,7 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 
 public abstract class Task implements Keyable {
-    protected byte[] message;
+    private byte[] message;
     protected final String file_id;
     protected int chunk_no;
     protected int current_attempt;
@@ -40,7 +41,7 @@ public abstract class Task implements Keyable {
         this.unregister();
     }
 
-    public void communicate() {
+    public final void communicate() {
         if (this.current_attempt >= ProtocolDefinitions.MESSAGE_DELAYS.length) {
             this.handleMaxRetriesReached();
             return;
@@ -48,7 +49,7 @@ public abstract class Task implements Keyable {
 
         try {
             printSendingMessage();
-            ChannelManager.getInstance().getBackup().broadcast(this.message);
+            getChannel().broadcast(this.message);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -58,6 +59,8 @@ public abstract class Task implements Keyable {
             this.communicate();
         }, ProtocolDefinitions.MESSAGE_DELAYS[this.current_attempt]);
     }
+
+    protected abstract ChannelHandler getChannel();
 
     protected final void cancelCommunication() {
         this.next_action.cancel(true);

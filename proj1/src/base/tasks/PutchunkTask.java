@@ -1,6 +1,8 @@
 package base.tasks;
 
 import base.ProtocolDefinitions;
+import base.channels.ChannelHandler;
+import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 
@@ -62,5 +64,10 @@ public class PutchunkTask extends Task {
     @Override
     protected void printSendingMessage() {
         System.out.printf("Sending PUTCHUNK message for fileid '%s' and chunk_no '%d' - attempt #%d\n", this.file_id, this.chunk_no, this.current_attempt + 1);
+    }
+
+    @Override
+    protected ChannelHandler getChannel() {
+        return ChannelManager.getInstance().getBackup();
     }
 }

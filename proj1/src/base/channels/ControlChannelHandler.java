@@ -4,10 +4,12 @@ import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
+import base.storage.StorageManager;
 import base.tasks.Task;
 import base.tasks.TaskManager;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 public class ControlChannelHandler extends ChannelHandler {
     public ControlChannelHandler(String hostname, int port) throws IOException {
@@ -50,7 +52,22 @@ public class ControlChannelHandler extends ChannelHandler {
     }
 
     private void handleGetchunk(CommonMessage info) {
-        System.out.println("Received GETCHUNK messsage");
+        byte[] chunk_data = StorageManager.getInstance().getStoredChunk(info.getFileId(), info.getChunkNo());
+        if (chunk_data == null) {
+            return;
+        }
+
+        final byte[] chunk_message = MessageFactory.createChunkMessage(info.getFileId(), info.getChunkNo(), chunk_data);
+        Future f = ThreadManager.getInstance().executeLaterMilis(() -> {
+            try {
+                System.out.print("Broadcasting CHUNK\n");
+                ChannelManager.getInstance().getRestore().broadcast(chunk_message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }, ProtocolDefinitions.getRandomMessageDelayMilis());
+
+        ChannelManager.getInstance().getRestore().registerChunkToSend(info.getFileId(), info.getChunkNo(), f);
     }
 
     private void handleStored(CommonMessage info) {

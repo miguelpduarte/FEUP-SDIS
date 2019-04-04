@@ -30,8 +30,7 @@ public class Restorer implements Keyable {
             try {
                 byte[] chunk_to_store = this.chunks_to_store.take();
                 StorageManager.getInstance().writeToFileEnd(this.file_name, chunk_to_store);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {
             }
         }
 
@@ -40,10 +39,16 @@ public class Restorer implements Keyable {
 
     public void haltWriter() {
         this.restoring_thread.cancel(true);
+        unregister();
     }
 
     public void stopWriter() {
         this.writer_running = false;
+        unregister();
+    }
+
+    protected void unregister() {
+        RestoreManager.getInstance().unregisterRestorer(this);
     }
 
     @Override

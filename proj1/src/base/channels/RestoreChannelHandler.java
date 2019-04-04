@@ -4,12 +4,22 @@ import base.ProtocolDefinitions;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.ThreadManager;
+import base.tasks.Task;
+import base.tasks.TaskManager;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 public class RestoreChannelHandler extends ChannelHandler {
     public RestoreChannelHandler(String hostname, int port) throws IOException {
         super(hostname, port);
+    }
+
+    private final ConcurrentHashMap<String, Future> chunkMessagesToSend = new ConcurrentHashMap<String, Future>();
+
+    public void registerChunkToSend(String file_id, int chunk_no, Future f) {
+        this.chunkMessagesToSend.put(ProtocolDefinitions.calcChunkHash(file_id, chunk_no), f);
     }
 
     @Override
@@ -31,10 +41,37 @@ public class RestoreChannelHandler extends ChannelHandler {
             }
 
             System.out.printf("\t\tMDR: Received message of type %s\n", info.getMessageType().name());
-            /*tasksTask t = TaskManager.getInstance().getTask(info);
-            if (t != null) {
-                t.notify(info);
-            }*/
+            switch (info.getMessageType()) {
+                case PUTCHUNK:
+                    break;
+                case STORED:
+                    break;
+                case GETCHUNK:
+                    break;
+                case CHUNK:
+                    handleChunk(info);
+                    break;
+            }
         });
+    }
+
+    private void handleChunk(CommonMessage info) {
+        stopRepeatedChunkSending(info);
+
+        Task t = TaskManager.getInstance().getTask(info);
+        if (t != null) {
+            t.notify(info);
+        }
+    }
+
+    private void stopRepeatedChunkSending(CommonMessage info) {
+        final String chunk_hash = ProtocolDefinitions.calcChunkHash(info.getFileId(), info.getChunkNo());
+        Future f = this.chunkMessagesToSend.get(chunk_hash);
+        if (f == null) {
+            return;
+        }
+        System.out.println("REPEATED CHUNK DETECTED - STOPPING THE SENDING");
+        f.cancel(true);
+        this.chunkMessagesToSend.remove(chunk_hash);
     }
 }

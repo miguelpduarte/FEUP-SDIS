@@ -2,9 +2,9 @@ package base.channels;
 
 public class ChannelManager {
     private static ChannelManager instance = new ChannelManager();
-    private ChannelHandler control;
-    private ChannelHandler backup;
-    private ChannelHandler restore;
+    private ControlChannelHandler control;
+    private BackupChannelHandler backup;
+    private RestoreChannelHandler restore;
 
     public static ChannelManager getInstance() {
         return instance;
@@ -13,21 +13,21 @@ public class ChannelManager {
     private ChannelManager() {
     }
 
-    public void setChannelHandlers(ChannelHandler control, ChannelHandler backup, ChannelHandler restore) {
+    public void setChannelHandlers(ControlChannelHandler control, BackupChannelHandler backup, RestoreChannelHandler restore) {
         this.control = control;
         this.backup = backup;
         this.restore = restore;
     }
 
-    public ChannelHandler getControl() {
+    public ControlChannelHandler getControl() {
         return control;
     }
 
-    public ChannelHandler getBackup() {
+    public BackupChannelHandler getBackup() {
         return backup;
     }
 
-    public ChannelHandler getRestore() {
+    public RestoreChannelHandler getRestore() {
         return restore;
     }
 }

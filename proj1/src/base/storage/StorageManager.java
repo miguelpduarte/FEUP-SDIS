@@ -40,12 +40,12 @@ public class StorageManager {
         //TODO: Check already stored chunks and insert that data into this.stored_chunks
     }
 
-    public boolean storeChunk(String file_id, int chunkno, byte[] data, int data_length) {
-        final String file_chunk_hash = String.format("%s_chk%d", file_id, chunkno);
-        if (this.stored_chunks.containsKey(file_chunk_hash)) {
-            System.out.printf("DBG:StorageManager.storeChunk::The file chunk with hash '%s' was already stored\n", file_chunk_hash);
+    public boolean storeChunk(String file_id, int chunk_no, byte[] data, int data_length) {
+        if (this.hasChunk(file_id, chunk_no)) {
             return true;
         }
+
+        final String file_chunk_hash = String.format("%s_chk%d", file_id, chunk_no);
 
         System.out.printf("StorageManager.storeChunk::Storing the file with hash '%s'\n", file_chunk_hash);
 
@@ -53,7 +53,7 @@ public class StorageManager {
         final String chunk_parent_dir = String.format("%s/%s/", this.backup_dirname, file_id);
         new File(chunk_parent_dir).mkdirs();
 
-        final String chunk_path = String.format("%schk%d", chunk_parent_dir, chunkno);
+        final String chunk_path = String.format("%schk%d", chunk_parent_dir, chunk_no);
 
         try (FileOutputStream fos = new FileOutputStream(chunk_path)) {
             fos.write(data, 0, data_length);
@@ -112,5 +112,29 @@ public class StorageManager {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public byte[] getStoredChunk(String file_id, int chunk_no) {
+        if (!this.hasChunk(file_id, chunk_no)) {
+            // Does not have the chunk
+            return null;
+        }
+
+        final String chunk_path = String.format("%s/%s/chk%d", this.backup_dirname, file_id, chunk_no);
+        File f = new File(chunk_path);
+        byte[] chunk_data = new byte[(int) f.length()];
+        try (FileInputStream fis = new FileInputStream(chunk_path)) {
+            fis.read(chunk_data);
+            return chunk_data;
+        } catch (IOException e) {
+            System.out.printf("StorageManager.getStoredChunk::Error in reading chunk '%d' for file_id '%s'\n", chunk_no, file_id);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private boolean hasChunk(String file_id, int chunk_no) {
+        final String file_chunk_hash = String.format("%s_chk%d", file_id, chunk_no);
+        return this.stored_chunks.containsKey(file_chunk_hash);
     }
 }
