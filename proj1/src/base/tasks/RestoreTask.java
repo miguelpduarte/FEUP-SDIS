@@ -11,9 +11,11 @@ import base.storage.Restorer;
 
 public class RestoreTask extends Task {
     private final String file_name;
+    private int chunk_no;
 
     public RestoreTask(String file_name) {
-        super(file_name, 0);
+        super(file_name);
+        this.chunk_no = 0;
         this.file_name = file_name;
         initRestorer();
         prepareMessage();

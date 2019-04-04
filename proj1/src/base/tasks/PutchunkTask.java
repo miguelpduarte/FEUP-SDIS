@@ -12,9 +12,11 @@ public class PutchunkTask extends Task {
     private final int replication_deg;
     private final HashSet<String> replicators = new HashSet<>();
     private final byte[] body;
+    private int chunk_no;
 
     public PutchunkTask(String file_name, int chunk_no, int replication_deg, byte[] body) {
-        super(file_name, chunk_no);
+        super(file_name);
+        this.chunk_no = chunk_no;
         this.body = body;
         this.replication_deg = replication_deg;
         prepareMessage();

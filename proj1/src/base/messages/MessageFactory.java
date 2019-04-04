@@ -141,6 +141,18 @@ public class MessageFactory {
         return output;
     }
 
+    public static byte[] createDeleteMessage(String file_id) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("DELETE").append(" ");
+        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
+        sb.append(file_id).append(" ");
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
+
+        return sb.toString().getBytes();
+    }
+
     public static CommonMessage getBasicInfo(byte[] message, int msg_length) {
         int crlf_index = getCRLFIndex(message);
         if (crlf_index == -1) {

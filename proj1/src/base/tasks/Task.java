@@ -4,7 +4,6 @@ import base.Keyable;
 import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.channels.ChannelHandler;
-import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 
@@ -14,13 +13,11 @@ import java.util.concurrent.ScheduledFuture;
 public abstract class Task implements Keyable {
     private byte[] message;
     protected final String file_id;
-    protected int chunk_no;
     protected int current_attempt;
     private ScheduledFuture next_action;
 
-    public Task(String file_name, int chunk_no) {
+    public Task(String file_name) {
         this.file_id = MessageFactory.filenameEncode(file_name);
-        this.chunk_no = chunk_no;
         this.current_attempt = 0;
     }
 
