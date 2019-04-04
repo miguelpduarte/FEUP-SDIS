@@ -6,6 +6,7 @@ import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
 import base.messages.MessageFactory;
 import base.storage.StorageManager;
+import base.tasks.DeleteTask;
 import base.tasks.PutchunkTask;
 import base.tasks.RestoreTask;
 import base.tasks.TaskManager;
@@ -13,7 +14,6 @@ import base.tasks.TaskManager;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Arrays;
 
 public class Peer extends UnicastRemoteObject implements IPeer {
     public Peer(String mc_hostname, int mc_port, String mdb_hostname, int mdb_port, String mdr_hostname, int mdr_port) throws IOException {
@@ -88,7 +88,14 @@ public class Peer extends UnicastRemoteObject implements IPeer {
     }
 
     @Override
-    public int delete(String filename) {
+    public int delete(String file_path) {
+        System.out.println("Peer.delete");
+        System.out.println("file_path = [" + file_path + "]");
+
+        final String file_name = new File(file_path).getName();
+
+        TaskManager.getInstance().registerTask(new DeleteTask(file_name));
+
         return 0;
     }
 

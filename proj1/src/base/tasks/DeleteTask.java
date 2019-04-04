@@ -8,6 +8,8 @@ import base.messages.MessageFactory;
 public class DeleteTask extends Task {
     public DeleteTask(String file_name) {
         super(file_name);
+        prepareMessage();
+        startCommuncation();
     }
 
     @Override

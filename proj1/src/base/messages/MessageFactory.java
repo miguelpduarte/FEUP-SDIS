@@ -162,16 +162,48 @@ public class MessageFactory {
         String message_header = new String(message, 0, crlf_index);
         String[] header_fields = message_header.split(" ");
 
-        return new CommonMessage(
-                ProtocolDefinitions.MessageType.valueOf(header_fields[0]),
-                header_fields[1],
-                header_fields[2],
-                header_fields[3],
-                Integer.parseInt(header_fields[4]),
-                crlf_index,
-                message,
-                msg_length
-        );
+        ProtocolDefinitions.MessageType msg_type = ProtocolDefinitions.MessageType.valueOf(header_fields[0]);
+
+        switch (msg_type) {
+            // with chunk no and replication deg
+            case PUTCHUNK:
+                return new CommonMessage(
+                        msg_type,
+                        header_fields[1],
+                        header_fields[2],
+                        header_fields[3],
+                        Integer.parseInt(header_fields[4]),
+                        Integer.parseInt(header_fields[5]),
+                        crlf_index,
+                        message,
+                        msg_length
+                );
+            // with chunk no and without replication deg
+            case STORED: case GETCHUNK: case CHUNK:
+                return new CommonMessage(
+                        msg_type,
+                        header_fields[1],
+                        header_fields[2],
+                        header_fields[3],
+                        Integer.parseInt(header_fields[4]),
+                        crlf_index,
+                        message,
+                        msg_length
+                );
+            // without chunk no and without replication deg
+            case DELETE:
+                return new CommonMessage(
+                        msg_type,
+                        header_fields[1],
+                        header_fields[2],
+                        header_fields[3],
+                        crlf_index,
+                        message,
+                        msg_length
+                );
+        }
+
+        return null;
     }
 
     private static int getCRLFIndex(byte[] array) {

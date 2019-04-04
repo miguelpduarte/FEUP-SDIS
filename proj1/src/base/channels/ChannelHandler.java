@@ -21,8 +21,8 @@ public abstract class ChannelHandler implements Runnable {
         this.packet = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
         this.channel_socket = new MulticastSocket(port);
         this.channel_socket.joinGroup(InetAddress.getByName(hostname));
-        this.channel_socket.setTimeToLive(1);
-        this.channel_socket.setLoopbackMode(false); // Change?
+        // this.channel_socket.setTimeToLive(1);
+        // this.channel_socket.setLoopbackMode(false); // Change?
     }
 
     @Override

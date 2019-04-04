@@ -23,32 +23,40 @@ public class ControlChannelHandler extends ChannelHandler {
 
 
         ThreadManager.getInstance().executeLater(() -> {
-            CommonMessage info = MessageFactory.getBasicInfo(packet_data, packet_length);
-            if (info == null) {
-                System.out.println("MDC: Message couldn't be parsed");
-                return;
-            }
+            try {
+                CommonMessage info = MessageFactory.getBasicInfo(packet_data, packet_length);
 
-            if (info.getSenderId().equals(ProtocolDefinitions.SERVER_ID)) {
-                // Own Message, ignoring
-                return;
-            }
+                if (info == null) {
+                    System.out.println("MDC: Message couldn't be parsed");
+                    return;
+                }
 
-            System.out.printf("\t\tMDC: Received message of type %s\n", info.getMessageType().name());
+                if (info.getSenderId().equals(ProtocolDefinitions.SERVER_ID)) {
+                    // Own Message, ignoring
+                    return;
+                }
 
-            switch (info.getMessageType()) {
-                case PUTCHUNK:
-                    break;
-                case STORED:
-                    handleStored(info);
-                    break;
-                case GETCHUNK:
-                    handleGetchunk(info);
-                    break;
-                case CHUNK:
-                    break;
+                System.out.printf("\t\tMDC: Received message of type %s\n", info.getMessageType().name());
+
+                switch (info.getMessageType()) {
+                    case STORED:
+                        handleStored(info);
+                        break;
+                    case GETCHUNK:
+                        handleGetchunk(info);
+                        break;
+                    case DELETE:
+                        handleDelete(info);
+                        break;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
+    }
+
+    private void handleDelete(CommonMessage info) {
+        StorageManager.getInstance().removeChunkIfStored(info.getFileId());
     }
 
     private void handleGetchunk(CommonMessage info) {

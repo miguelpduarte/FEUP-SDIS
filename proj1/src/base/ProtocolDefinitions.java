@@ -14,7 +14,8 @@ public class ProtocolDefinitions {
         PUTCHUNK,
         STORED,
         GETCHUNK,
-        CHUNK
+        CHUNK,
+        DELETE
     }
 
     public static final int[] MESSAGE_DELAYS = {1, 2, 4, 8};

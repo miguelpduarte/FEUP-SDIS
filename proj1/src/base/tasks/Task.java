@@ -38,7 +38,7 @@ public abstract class Task implements Keyable {
         this.unregister();
     }
 
-    public final void communicate() {
+    private void communicate() {
         if (this.current_attempt >= ProtocolDefinitions.MESSAGE_DELAYS.length) {
             this.handleMaxRetriesReached();
             return;

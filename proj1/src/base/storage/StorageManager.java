@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StorageManager {
@@ -45,7 +46,7 @@ public class StorageManager {
             return true;
         }
 
-        final String file_chunk_hash = String.format("%s_chk%d", file_id, chunk_no);
+        final String file_chunk_hash = ProtocolDefinitions.calcChunkHash(file_id, chunk_no);
 
         System.out.printf("StorageManager.storeChunk::Storing the file with hash '%s'\n", file_chunk_hash);
 
@@ -134,7 +135,35 @@ public class StorageManager {
     }
 
     private boolean hasChunk(String file_id, int chunk_no) {
-        final String file_chunk_hash = String.format("%s_chk%d", file_id, chunk_no);
+        final String file_chunk_hash = ProtocolDefinitions.calcChunkHash(file_id, chunk_no);
         return this.stored_chunks.containsKey(file_chunk_hash);
+    }
+
+    public void removeChunkIfStored(String file_id) {
+        final String file_id_backup_path = String.format("%s/%s/", this.backup_dirname, file_id);
+        File file_backup_dir = new File(file_id_backup_path);
+        if (!file_backup_dir.exists()) {
+            return;
+        }
+
+        int dbg_n_removed = 0;
+
+        // If the directory exists, we have stored chunks - must delete them individually and then delete the directory itself
+        // Must not forget to unregister from the ConcurrentHashMap
+        // TODO: Maybe fix verboseness
+        for (File chunk : Objects.requireNonNull(file_backup_dir.listFiles())) {
+            chunk.delete();
+
+            final String chunk_hash = ProtocolDefinitions.calcChunkHash(file_id, Integer.parseInt(chunk.getName().substring(3)));
+            // Unregistering as backed up chunks
+            this.stored_chunks.remove(chunk_hash);
+            dbg_n_removed++;
+        }
+
+        if (!file_backup_dir.delete())  {
+            System.out.printf("Could not delete directory %s\n", file_backup_dir.getName());
+        }
+
+        System.out.printf("Removed %d files\n", dbg_n_removed);
     }
 }
