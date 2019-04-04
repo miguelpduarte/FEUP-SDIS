@@ -8,7 +8,7 @@ TEST_APP_CLASS="base.TestApp"
 
 case $2 in
 "BACKUP")
-    if [[ $# != 3 ]]; then
+    if [[ $# != 4 ]]; then
         echo "Wrong no. of arguments"
         echo "Usage: <peer_id> BACKUP <file_path> <replication_degree>"
         exit 1
