@@ -1,0 +1,13 @@
+chunkno:
+- max 6 chars (file max size 64GB lmao)
+
+replicationdeg:
+- max 9: ignorar as malformed e limitar os args no RMI
+
+chunk size: 64KByte
+
+todo: move chunk_no to children or intermediate abstract?
+
+todo: discuss stringbuilder to string? (MessageFactory)
+
+todo: delete must also look at the peer's own files lol
