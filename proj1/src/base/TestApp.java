@@ -35,10 +35,10 @@ public class TestApp {
                     peer.setMaxDiskSpace(Integer.parseInt(operands[0]));
                     break;
                 case "STATE":
-                    peer.getServiceState();
+                    System.out.println(peer.getServiceState());
                     break;
                 default:
-                    System.err.println("Uh oh invalid method!");
+                    System.err.println("Invalid method!");
                     System.exit(2);
             }
         } catch (RemoteException e) {

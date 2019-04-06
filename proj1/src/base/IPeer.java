@@ -13,5 +13,5 @@ public interface IPeer extends Remote {
     // When called with 0 works as a Reclaim action
     int setMaxDiskSpace(int disk_space_kbs) throws RemoteException;
 
-    Object getServiceState() throws RemoteException;
+    String getServiceState() throws RemoteException;
 }

@@ -105,7 +105,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
     }
 
     @Override
-    public Object getServiceState() {
-        return null;
+    public String getServiceState() {
+        return String.format("Service State of Peer %s:\n", ProtocolDefinitions.SERVER_ID);
     }
 }
