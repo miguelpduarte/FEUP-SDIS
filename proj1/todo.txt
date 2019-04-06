@@ -13,3 +13,5 @@ todo: discuss stringbuilder to string? (MessageFactory)
 todo: delete must also look at the peer's own files lol <- Very easy but important
 
 todo: consider protocol version and other things like that in message parsing (body is after last CRLF, for example - Reverse array percorrating?)
+
+todo: on restore dont always append, first time should be overwrite just in case that there is already something there
