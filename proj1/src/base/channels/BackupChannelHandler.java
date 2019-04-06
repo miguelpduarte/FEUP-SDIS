@@ -61,7 +61,7 @@ public class BackupChannelHandler extends ChannelHandler {
             }
 
             // Registering that the chunk was backed up successfully
-            ChunkBackupState.getInstance().registerBackup(file_id, chunk_no, replication_degree);
+            ChunkBackupState.getInstance().registerBackup(file_id, chunk_no, replication_degree, body.length);
 
             final byte[] stored_message = MessageFactory.createStoredMessage(file_id, chunk_no);
 
