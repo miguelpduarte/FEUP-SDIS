@@ -15,6 +15,7 @@ public class CommonMessage implements Keyable {
     private final int crlf_index;
     private final byte[] message;
     private final int msg_length;
+    private final int last_crlf_index;
 
     public CommonMessage(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int chunk_no, int replication_degree, int crlf_index, byte[] message, int msg_length) {
         this.message_type = message_type;
@@ -26,6 +27,26 @@ public class CommonMessage implements Keyable {
         this.crlf_index = crlf_index;
         this.message = message;
         this.msg_length = msg_length;
+        this.last_crlf_index = this.getLastCRLFIndex();
+    }
+
+    private int getLastCRLFIndex() {
+        // Must find the first two consecutive CRLFs
+        // (this ensures that CRLF's in the body don't break everything - if searching for the last one it could break)
+
+        if (this.crlf_index + 2 > this.msg_length) {
+            // Message only has one CRLF, invalid format
+            return -1;
+        }
+
+        // Must start at the already found CRLF in case that there are no additional lines (protocol version 1.0)
+        for (int i = this.crlf_index; i < this.msg_length - 3; ++i) {
+            if (this.message[i] == ProtocolDefinitions.CR && this.message[i + 1] == ProtocolDefinitions.LF && this.message[i + 2] == ProtocolDefinitions.CR && this.message[i + 3] == ProtocolDefinitions.LF) {
+                return i + 2;
+            }
+        }
+
+        return -1;
     }
 
     public CommonMessage(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int crlf_index, byte[] message, int msg_length) {
@@ -68,21 +89,17 @@ public class CommonMessage implements Keyable {
         return message_type.name() + file_id + chunk_no;
     }
 
-    public int getBodyLength() {
-        return msg_length - (crlf_index + 4);
-    }
-
     /**
      * For usage in reading the body of the message for storing in PUTCHUNK and CHUNK messages for example
      *
      * @return The message body
      */
     public byte[] getBody() throws InvalidMessageFormatException {
-        if (this.msg_length > this.crlf_index + 3 && this.message[this.crlf_index + 2] == ProtocolDefinitions.CR && this.message[this.crlf_index + 3] == ProtocolDefinitions.LF) {
-            return Arrays.copyOfRange(this.message, this.crlf_index + 4, this.msg_length);
+        if (this.last_crlf_index == -1 || this.last_crlf_index == this.crlf_index) {
+            throw new InvalidMessageFormatException();
         }
 
-        throw new InvalidMessageFormatException();
+        return Arrays.copyOfRange(this.message, this.last_crlf_index + 2, this.msg_length);
     }
 
     public int getReplicationDegree() {

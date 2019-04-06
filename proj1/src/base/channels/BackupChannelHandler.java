@@ -21,27 +21,27 @@ public class BackupChannelHandler extends ChannelHandler {
         final int packet_length = this.packet.getLength();
 
         ThreadManager.getInstance().executeLater(() -> {
-            CommonMessage info = MessageFactory.getBasicInfo(packet_data, packet_length);
-            if (info == null) {
-                System.out.println("MDB: Message couldn't be parsed");
-                return;
-            }
+            try {
+                CommonMessage info = MessageFactory.getBasicInfo(packet_data, packet_length);
+                if (info == null) {
+                    System.out.println("MDB: Message couldn't be parsed");
+                    return;
+                }
 
-            if (info.getSenderId().equals(ProtocolDefinitions.SERVER_ID)) {
-                // Own Message, ignoring
-                return;
-            }
+                if (info.getSenderId().equals(ProtocolDefinitions.SERVER_ID)) {
+                    // Own Message, ignoring
+                    return;
+                }
 
-            System.out.printf("\t\tMDB: Received message of type %s\n", info.getMessageType().name());
+                System.out.printf("\t\tMDB: Received message of type %s\n", info.getMessageType().name());
 
-            // TODO: Refactor later
-            // TODO: Add size constraints, etc
-            // Was thinking of creating a separate task that would run itself later with executeLater but it seemed pointless because this code is self contained in terms of processing it seems to me
-            // It is already in a thread separate from the listening of messages and it must block until the file is backed up anyway...
-            switch (info.getMessageType()) {
-                case PUTCHUNK:
-                    handlePutchunk(info);
-                    break;
+                switch (info.getMessageType()) {
+                    case PUTCHUNK:
+                        handlePutchunk(info);
+                        break;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -53,10 +53,9 @@ public class BackupChannelHandler extends ChannelHandler {
             final byte[] body = info.getBody();
             final String file_id = info.getFileId();
             final int chunk_no = info.getChunkNo();
-            final int body_length = info.getBodyLength();
             final int replication_degree = info.getReplicationDegree();
 
-            if (!StorageManager.getInstance().storeChunk(file_id, chunk_no, body, body_length)) {
+            if (!StorageManager.getInstance().storeChunk(file_id, chunk_no, body)) {
                 System.out.printf("Storage of file id '%s' and chunk no '%d' was unsuccessful, aborting\n", file_id, chunk_no);
                 return;
             }

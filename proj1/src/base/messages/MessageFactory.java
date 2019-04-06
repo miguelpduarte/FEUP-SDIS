@@ -159,6 +159,8 @@ public class MessageFactory {
             return null;
         }
 
+        // The "header" mentioned below is simply the first line, according to protocol 1.0
+
         String message_header = new String(message, 0, crlf_index);
         String[] header_fields = message_header.split(" ");
 

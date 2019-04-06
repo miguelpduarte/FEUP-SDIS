@@ -95,6 +95,8 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         final String file_name = new File(file_path).getName();
 
         TaskManager.getInstance().registerTask(new DeleteTask(file_name));
+        // Also deleting own files if they exist
+        StorageManager.getInstance().removeFileChunksIfStored(MessageFactory.filenameEncode(file_name));
 
         return 0;
     }

@@ -58,13 +58,13 @@ public class StorageManager {
         //TODO: Check already stored chunks and insert that data into ChunkBackupState (must also check the number of "storeds" somehow - read from file?)
     }
 
-    public boolean storeChunk(String file_id, int chunk_no, byte[] data, int data_length) {
+    public boolean storeChunk(String file_id, int chunk_no, byte[] data) {
         if (this.hasChunk(file_id, chunk_no)) {
             System.out.printf("\tChunk with file_id '%s' and chunk_no '%d' already stored", file_id, chunk_no);
             return true;
         }
 
-        if (!this.canStore(data_length)) {
+        if (!this.canStore(data.length)) {
             System.out.printf("\tCannot store chunk with file_id '%s' and chunk_no '%d' - Storage would be over maximum!", file_id, chunk_no);
             return false;
         }
@@ -78,14 +78,14 @@ public class StorageManager {
         final String chunk_path = String.format("%schk%d", chunk_parent_dir, chunk_no);
 
         try (FileOutputStream fos = new FileOutputStream(chunk_path)) {
-            fos.write(data, 0, data_length);
+            fos.write(data);
             //fos.close(); There is unnecessary since the instance of "fos" is created inside a try-with-resources statement, which will automatically close the FileOutputStream in case of failure
             // See https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
 
             // Registration that a chunk was stored is done by the caller due to needing the replication degree, which is useless here
 
             // However, the number of bytes used is relevant so it is changed here
-            this.updateOccupiedSpace(data_length);
+            this.updateOccupiedSpace(data.length);
             System.out.println("DBG: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes");
             return true;
         } catch (IOException e) {
@@ -174,7 +174,7 @@ public class StorageManager {
             System.out.println("DBG2: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes");
             dbg_n_removed++;
 
-            // Deleting after due to needing th original size for updating the occupied space
+            // Deleting after due to needing the original size for updating the occupied space
             chunk.delete();
         }
 
