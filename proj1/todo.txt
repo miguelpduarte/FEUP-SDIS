@@ -11,3 +11,5 @@ todo: move chunk_no to children or intermediate abstract?
 todo: discuss stringbuilder to string? (MessageFactory)
 
 todo: delete must also look at the peer's own files lol <- Very easy but important
+
+todo: consider protocol version and other things like that in message parsing (body is after last CRLF, for example - Reverse array percorrating?)

@@ -164,6 +164,8 @@ public class MessageFactory {
 
         ProtocolDefinitions.MessageType msg_type = ProtocolDefinitions.MessageType.valueOf(header_fields[0]);
 
+        // TODO: Consider protocol version
+
         switch (msg_type) {
             // with chunk no and replication deg
             case PUTCHUNK:
@@ -179,7 +181,7 @@ public class MessageFactory {
                         msg_length
                 );
             // with chunk no and without replication deg
-            case STORED: case GETCHUNK: case CHUNK:
+            case STORED: case GETCHUNK: case CHUNK: case REMOVED:
                 return new CommonMessage(
                         msg_type,
                         header_fields[1],
@@ -201,9 +203,10 @@ public class MessageFactory {
                         message,
                         msg_length
                 );
+            // unexpected message type
+            default:
+                return null;
         }
-
-        return null;
     }
 
     private static int getCRLFIndex(byte[] array) {

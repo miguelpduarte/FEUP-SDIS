@@ -4,6 +4,7 @@ import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
+import base.storage.ChunkBackupState;
 import base.storage.StorageManager;
 import base.tasks.Task;
 import base.tasks.TaskManager;
@@ -48,6 +49,9 @@ public class ControlChannelHandler extends ChannelHandler {
                     case DELETE:
                         handleDelete(info);
                         break;
+                    case REMOVED:
+                        handleRemoved(info);
+                        break;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -55,8 +59,20 @@ public class ControlChannelHandler extends ChannelHandler {
         });
     }
 
+    private void handleRemoved(CommonMessage info) {
+        final String file_id = info.getFileId();
+        final int chunk_no = info.getChunkNo();
+
+        ChunkBackupState.getInstance().decrementBackupCount(file_id, chunk_no);
+
+        if (!ChunkBackupState.getInstance().isChunkOverReplicationDegree(file_id, chunk_no)) {
+            // TODO: Start PUTHCUNK subprotocol for replication after a random delay, while checking if no one else is doing the same
+            System.out.printf("Chunk no longer over replication degree - file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
+        }
+    }
+
     private void handleDelete(CommonMessage info) {
-        StorageManager.getInstance().removeChunkIfStored(info.getFileId());
+        StorageManager.getInstance().removeFileChunksIfStored(info.getFileId());
     }
 
     private void handleGetchunk(CommonMessage info) {
@@ -79,6 +95,9 @@ public class ControlChannelHandler extends ChannelHandler {
     }
 
     private void handleStored(CommonMessage info) {
+        // If the chunk is backed up here, then count up the number of replicators in the system
+        ChunkBackupState.getInstance().incrementBackupCount(info.getFileId(), info.getChunkNo());
+
         Task t = TaskManager.getInstance().getTask(info);
         if (t != null) {
             t.notify(info);

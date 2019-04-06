@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class StorageManager {
     private static StorageManager instance = new StorageManager();
@@ -17,12 +16,6 @@ public class StorageManager {
     public static StorageManager getInstance() {
         return instance;
     }
-
-    // Using a concurrent hash map because several threads might operate over it simultaneously
-    private final ConcurrentHashMap<String, Object> stored_chunks = new ConcurrentHashMap<>();
-
-    // Dummy value to associate with an Object in the backing Map (idea taken from Java's implementation of HashSet)
-    private static final Object CHUNK_STORED = new Object();
 
     private StorageManager() {
     }
@@ -38,11 +31,12 @@ public class StorageManager {
         new File(this.backup_dirname).mkdirs();
         new File(this.restored_dirname).mkdirs();
 
-        //TODO: Check already stored chunks and insert that data into this.stored_chunks
+        //TODO: Check already stored chunks and insert that data into ChunkBackupState (must also check the number of "storeds" somehow)
     }
 
     public boolean storeChunk(String file_id, int chunk_no, byte[] data, int data_length) {
         if (this.hasChunk(file_id, chunk_no)) {
+            System.out.println("\t------$$$$ already stored");
             return true;
         }
 
@@ -60,7 +54,8 @@ public class StorageManager {
             fos.write(data, 0, data_length);
             //fos.close(); There is unnecessary since the instance of "fos" is created inside a try-with-resources statement, which will automatically close the FileOutputStream in case of failure
             // See https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
-            this.stored_chunks.put(file_chunk_hash, CHUNK_STORED);
+
+            // Registration that a chunk was stored is done by the caller due to needing the replication degree, which is useless here
             return true;
         } catch (IOException e) {
             System.out.printf("StorageManager.storeChunk::Error in storing file chunk with hash '%s'\n", file_chunk_hash);
@@ -100,7 +95,7 @@ public class StorageManager {
 
     /**
      * For use in restoring
-     * @param file_name
+     * @param file_name name of file that is being restored
      */
     public boolean writeToFileEnd(String file_name, byte[] data) {
         final String file_path = String.format("%s/%s", this.restored_dirname, file_name);
@@ -135,11 +130,10 @@ public class StorageManager {
     }
 
     private boolean hasChunk(String file_id, int chunk_no) {
-        final String file_chunk_hash = ProtocolDefinitions.calcChunkHash(file_id, chunk_no);
-        return this.stored_chunks.containsKey(file_chunk_hash);
+        return ChunkBackupState.getInstance().isChunkBackedUp(file_id, chunk_no);
     }
 
-    public void removeChunkIfStored(String file_id) {
+    public void removeFileChunksIfStored(String file_id) {
         final String file_id_backup_path = String.format("%s/%s/", this.backup_dirname, file_id);
         File file_backup_dir = new File(file_id_backup_path);
         if (!file_backup_dir.exists()) {
@@ -154,9 +148,9 @@ public class StorageManager {
         for (File chunk : Objects.requireNonNull(file_backup_dir.listFiles())) {
             chunk.delete();
 
-            final String chunk_hash = ProtocolDefinitions.calcChunkHash(file_id, Integer.parseInt(chunk.getName().substring(3)));
             // Unregistering as backed up chunks
-            this.stored_chunks.remove(chunk_hash);
+            final int chunk_no = Integer.parseInt(chunk.getName().substring(3));
+            ChunkBackupState.getInstance().unregisterBackup(file_id, chunk_no);
             dbg_n_removed++;
         }
 
