@@ -13,11 +13,36 @@ public class StorageManager {
     private String backup_dirname;
     private String restored_dirname;
 
+    // TODO: Use
+    private int occupied_space_bytes = 0;
+    private int max_space_kbytes = ProtocolDefinitions.INITIAL_STORAGE_MAX_KBS;
+
     public static StorageManager getInstance() {
         return instance;
     }
 
     private StorageManager() {
+    }
+
+    // TODO: Use
+    /// Methods for managing occupied space
+
+    private synchronized void updateOccupiedSpace(int diff_bytes) {
+        this.occupied_space_bytes += diff_bytes;
+    }
+
+    public synchronized int getOccupiedSpaceBytes() {
+        return this.occupied_space_bytes;
+    }
+
+    private synchronized boolean canStore(int data_length) {
+        return this.occupied_space_bytes + data_length <= this.max_space_kbytes * ProtocolDefinitions.KB_TO_BYTE;
+    }
+
+    public synchronized void setMaxSpaceKbytes(int max_space_kbytes) {
+        System.out.println("StorageManager.setMaxSpaceKbytes -> TODO: Reclaim space");
+        this.max_space_kbytes = max_space_kbytes;
+        // TODO: Make checks and reclaim space if needed
     }
 
     public void initStorage() {
@@ -31,18 +56,21 @@ public class StorageManager {
         new File(this.backup_dirname).mkdirs();
         new File(this.restored_dirname).mkdirs();
 
-        //TODO: Check already stored chunks and insert that data into ChunkBackupState (must also check the number of "storeds" somehow)
+        //TODO: Check already stored chunks and insert that data into ChunkBackupState (must also check the number of "storeds" somehow - read from file?)
     }
 
     public boolean storeChunk(String file_id, int chunk_no, byte[] data, int data_length) {
         if (this.hasChunk(file_id, chunk_no)) {
-            System.out.println("\t------$$$$ already stored");
+            System.out.printf("\tChunk with file_id '%s' and chunk_no '%d' already stored", file_id, chunk_no);
             return true;
         }
 
-        final String file_chunk_hash = ProtocolDefinitions.calcChunkHash(file_id, chunk_no);
+        if (!this.canStore(data_length)) {
+            System.out.printf("\tCannot store chunk with file_id '%s' and chunk_no '%d' - Storage would be over maximum!", file_id, chunk_no);
+            return false;
+        }
 
-        System.out.printf("StorageManager.storeChunk::Storing the file with hash '%s'\n", file_chunk_hash);
+        System.out.printf("StorageManager.storeChunk::Storing chunk with file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
 
         // Ensuring that the parent directories exist so that the FileOutputStream can create the file correctly
         final String chunk_parent_dir = String.format("%s/%s/", this.backup_dirname, file_id);
@@ -58,43 +86,31 @@ public class StorageManager {
             // Registration that a chunk was stored is done by the caller due to needing the replication degree, which is useless here
             return true;
         } catch (IOException e) {
-            System.out.printf("StorageManager.storeChunk::Error in storing file chunk with hash '%s'\n", file_chunk_hash);
+            System.out.printf("StorageManager.storeChunk::Error in storing chunk with file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
             e.printStackTrace();
             return false;
         }
     }
 
-    public static byte[] readFromFile(String file_path) throws IOException {
-        // See https://stackoverflow.com/questions/858980/file-to-byte-in-java
+    /**
+     * Used to ensure that a file exists and that it is empty before starting to append to it
+     * @param file_name file to create or empty
+     */
+    public boolean createEmptyFile(String file_name) {
+        final String file_path = String.format("%s/%s", this.restored_dirname, file_name);
 
-        File f = new File(file_path);
-        long file_size = f.length();
-
-        // Arrays in Java have to be created using int and not long
-        // Thus, checking if there is no "size overflow"
-        if (file_size > Integer.MAX_VALUE) {
-            throw new IOException("File too large to read into a byte array!");
-        }
-
-        byte[] file_data = new byte[(int) file_size];
-
-        try (FileInputStream is = new FileInputStream(f)) {
-            int offset = 0, n_bytes_read;
-            while (offset < file_data.length && (n_bytes_read = is.read(file_data, offset, file_data.length - offset)) >= 0) {
-                offset += n_bytes_read;
-            }
-
-            // Ensuring that all of the bytes have been read
-            if (offset < file_data.length) {
-                throw new IOException("Could not read full contents of file " + file_path);
-            }
-
-            return file_data;
+        try (FileOutputStream fos = new FileOutputStream(file_path)) {
+            return true;
+        } catch (IOException e) {
+            System.out.printf("StorageManager.createEmptyFile::Error creating empty file for name '%s'", file_name);
+            e.printStackTrace();
+            return false;
         }
     }
 
     /**
      * For use in restoring
+     *
      * @param file_name name of file that is being restored
      */
     public boolean writeToFileEnd(String file_name, byte[] data) {
@@ -154,10 +170,39 @@ public class StorageManager {
             dbg_n_removed++;
         }
 
-        if (!file_backup_dir.delete())  {
+        if (!file_backup_dir.delete()) {
             System.out.printf("Could not delete directory %s\n", file_backup_dir.getName());
         }
 
         System.out.printf("Removed %d files\n", dbg_n_removed);
+    }
+
+    public static byte[] readFromFile(String file_path) throws IOException {
+        // See https://stackoverflow.com/questions/858980/file-to-byte-in-java
+
+        File f = new File(file_path);
+        long file_size = f.length();
+
+        // Arrays in Java have to be created using int and not long
+        // Thus, checking if there is no "size overflow"
+        if (file_size > Integer.MAX_VALUE) {
+            throw new IOException("File too large to read into a byte array!");
+        }
+
+        byte[] file_data = new byte[(int) file_size];
+
+        try (FileInputStream is = new FileInputStream(f)) {
+            int offset = 0, n_bytes_read;
+            while (offset < file_data.length && (n_bytes_read = is.read(file_data, offset, file_data.length - offset)) >= 0) {
+                offset += n_bytes_read;
+            }
+
+            // Ensuring that all of the bytes have been read
+            if (offset < file_data.length) {
+                throw new IOException("Could not read full contents of file " + file_path);
+            }
+
+            return file_data;
+        }
     }
 }

@@ -37,6 +37,9 @@ public class ProtocolDefinitions {
 
     // 10 for MsgType, 3 for Version, 16 for SenderId, 64 for FileId, 6 for ChunkNo, 1 for ReplicationDeg, 6 for spaces, 4 for CRLF (can be 1 or 2) - rounded up to 128
     public static final int HEADER_MAX_BYTES = 128;
-    public static final int CHUNK_MAX_SIZE_BYTES = 64000;
+    public static final int CHUNK_MAX_SIZE_BYTES = 64 * ProtocolDefinitions.KB_TO_BYTE;
     public static final int MAX_CHUNKS = 1000000;
+
+    public static final int INITIAL_STORAGE_MAX_KBS= 1000;
+    public static final int KB_TO_BYTE = 1000;
 }

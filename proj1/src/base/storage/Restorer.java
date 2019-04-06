@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Restorer implements Keyable {
     private final String file_name;
     private final String file_id;
-    private final BlockingQueue<byte []> chunks_to_store = new LinkedBlockingQueue<>();
+    private final BlockingQueue<byte[]> chunks_to_store = new LinkedBlockingQueue<>();
     private Future restoring_thread;
     private boolean writer_running = true;
 
@@ -26,10 +26,15 @@ public class Restorer implements Keyable {
     }
 
     private void writer() {
+        if (!StorageManager.getInstance().createEmptyFile(file_name)) {
+            System.out.printf("Restorer.writer::Error creating empty file for file_name '%s', aborting!\n", file_name);
+        }
+
         while (this.writer_running) {
             try {
                 byte[] chunk_to_store = this.chunks_to_store.take();
-                StorageManager.getInstance().writeToFileEnd(this.file_name, chunk_to_store);
+                System.out.println("Writing to file");
+                StorageManager.getInstance().writeToFileEnd(file_name, chunk_to_store);
             } catch (InterruptedException ignored) {
             }
         }
@@ -58,6 +63,7 @@ public class Restorer implements Keyable {
 
     /**
      * Adds a chunk's data to the queue of chunks to store. Must be done sequentially in order to ensure that the file's data is not broken
+     *
      * @param chunk_data
      */
     public void addChunk(byte[] chunk_data) {
