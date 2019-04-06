@@ -6,6 +6,8 @@ replicationdeg:
 
 chunk size: 64KByte
 
+todo: not loading the whole file at once, split it directly when reading - must change structure to start sending tasks as the file chunks are read for it to make any difference :/
+
 todo: move chunk_no to children or intermediate abstract?
 
 todo: discuss stringbuilder to string? (MessageFactory)

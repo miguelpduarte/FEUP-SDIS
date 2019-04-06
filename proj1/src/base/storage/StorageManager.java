@@ -13,7 +13,6 @@ public class StorageManager {
     private String backup_dirname;
     private String restored_dirname;
 
-    // TODO: Use
     private int occupied_space_bytes = 0;
     private int max_space_kbytes = ProtocolDefinitions.INITIAL_STORAGE_MAX_KBS;
 
@@ -84,6 +83,10 @@ public class StorageManager {
             // See https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
 
             // Registration that a chunk was stored is done by the caller due to needing the replication degree, which is useless here
+
+            // However, the number of bytes used is relevant so it is changed here
+            this.updateOccupiedSpace(data_length);
+            System.out.println("DBG: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes");
             return true;
         } catch (IOException e) {
             System.out.printf("StorageManager.storeChunk::Error in storing chunk with file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
@@ -99,7 +102,7 @@ public class StorageManager {
     public boolean createEmptyFile(String file_name) {
         final String file_path = String.format("%s/%s", this.restored_dirname, file_name);
 
-        try (FileOutputStream fos = new FileOutputStream(file_path)) {
+        try (FileOutputStream ignored = new FileOutputStream(file_path)) {
             return true;
         } catch (IOException e) {
             System.out.printf("StorageManager.createEmptyFile::Error creating empty file for name '%s'", file_name);
@@ -162,12 +165,17 @@ public class StorageManager {
         // Must not forget to unregister from the ConcurrentHashMap
         // TODO: Maybe fix verboseness
         for (File chunk : Objects.requireNonNull(file_backup_dir.listFiles())) {
-            chunk.delete();
-
+            // Space was freed so the used space is updated
+            System.out.println("chunk.length() = " + chunk.length());
+            this.updateOccupiedSpace(-1 * (int)chunk.length());
             // Unregistering as backed up chunks
             final int chunk_no = Integer.parseInt(chunk.getName().substring(3));
             ChunkBackupState.getInstance().unregisterBackup(file_id, chunk_no);
+            System.out.println("DBG2: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes");
             dbg_n_removed++;
+
+            // Deleting after due to needing th original size for updating the occupied space
+            chunk.delete();
         }
 
         if (!file_backup_dir.delete()) {
