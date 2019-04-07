@@ -4,8 +4,10 @@ import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
+import base.storage.ChunkBackupInfo;
 import base.storage.ChunkBackupState;
 import base.storage.StorageManager;
+import base.tasks.PutchunkTask;
 import base.tasks.Task;
 import base.tasks.TaskManager;
 
@@ -63,11 +65,30 @@ public class ControlChannelHandler extends ChannelHandler {
         final String file_id = info.getFileId();
         final int chunk_no = info.getChunkNo();
 
-        ChunkBackupState.getInstance().getChunkBackupInfo(file_id, chunk_no).decrementNumStored();
+        final ChunkBackupInfo chunk_backup_info = ChunkBackupState.getInstance().getChunkBackupInfo(file_id, chunk_no);
+        chunk_backup_info.decrementNumStored();
 
-        if (!ChunkBackupState.getInstance().getChunkBackupInfo(file_id, chunk_no).isOverReplicationDegree()) {
+        if (!chunk_backup_info.isOverReplicationDegree()) {
             // TODO: Start PUTHCUNK subprotocol for replication after a random delay, while checking if no one else is doing the same
             System.out.printf("Chunk no longer over replication degree - file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
+
+            // Read from file
+            final byte[] chunk_data = StorageManager.getInstance().getStoredChunk(file_id, chunk_no);
+            assert chunk_data != null;
+
+            final int replication_degree = chunk_backup_info.getReplicationDegree();
+
+            Future f = ThreadManager.getInstance().executeLaterMilis(() -> {
+                try {
+                    // Start PUTCHUNK sub-protocol for this chunk
+                    TaskManager.getInstance().registerTask(new PutchunkTask(file_id, chunk_no, replication_degree, chunk_data));
+                } catch (Exception e) {
+                    System.out.println("In REMOVED recovery");
+                    e.printStackTrace();
+                }
+            }, ProtocolDefinitions.getRandomMessageDelayMilis());
+
+            ChannelManager.getInstance().getBackup().registerPutchunkToSend(info.getFileId(), info.getChunkNo(), f);
         }
     }
 

@@ -54,6 +54,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("file_path = [" + file_path + "], replication_factor = [" + replication_factor + "]");
 
         final String file_name = new File(file_path).getName();
+        final String file_id = MessageFactory.filenameEncode(file_name);
 
         // Testing by creating a dummy tasksPutchunkTask that will autonomously communicate:
         try {
@@ -62,7 +63,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
             for (int i = 0; i < split_file_data.length; ++i) {
                 // System.out.println("i = " + i);
-                TaskManager.getInstance().registerTask(new PutchunkTask(file_name, i, replication_factor, split_file_data[i]));
+                TaskManager.getInstance().registerTask(new PutchunkTask(file_id, i, replication_factor, split_file_data[i]));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -81,8 +82,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();
+        final String file_id = MessageFactory.filenameEncode(file_name);
 
-        TaskManager.getInstance().registerTask(new RestoreTask(file_name));
+        TaskManager.getInstance().registerTask(new RestoreTask(file_id, file_name));
 
         return 0;
     }
@@ -93,8 +95,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();
+        final String file_id = MessageFactory.filenameEncode(file_name);
 
-        TaskManager.getInstance().registerTask(new DeleteTask(file_name));
+        TaskManager.getInstance().registerTask(new DeleteTask(file_id));
         // Also deleting own files if they exist
         StorageManager.getInstance().removeFileChunksIfStored(MessageFactory.filenameEncode(file_name));
 

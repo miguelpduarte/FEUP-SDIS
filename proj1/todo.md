@@ -21,7 +21,9 @@ todo: move chunk\_no to children or intermediate abstract?
 
 todo: discuss stringbuilder to string? (MessageFactory)
 
-todo: peer that does backups should store information just like ChunkBackupState
+todo: peer that does backups should store information just like ChunkBackupState -> necessary for STATE
+
+~~todo: handling REMOVED with PUTCHUNKs to the network if the replication degree has fallen, etc~~ - done, needs testing
 
 todo: discuss the reclaim strategy:
 - Current idea:

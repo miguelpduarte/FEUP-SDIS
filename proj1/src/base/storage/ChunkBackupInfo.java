@@ -45,4 +45,8 @@ public class ChunkBackupInfo {
     public int getSizeBytes() {
         return size_bytes;
     }
+
+    public int getReplicationDegree() {
+        return replication_degree;
+    }
 }

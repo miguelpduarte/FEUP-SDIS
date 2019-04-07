@@ -9,10 +9,18 @@ import base.storage.ChunkBackupState;
 import base.storage.StorageManager;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 public class BackupChannelHandler extends ChannelHandler {
     public BackupChannelHandler(String hostname, int port) throws IOException {
         super(hostname, port);
+    }
+
+    private final ConcurrentHashMap<String, Future> putchunkMessagesToSend = new ConcurrentHashMap<String, Future>();
+
+    public void registerPutchunkToSend(String file_id, int chunk_no, Future f) {
+        this.putchunkMessagesToSend.put(ProtocolDefinitions.calcChunkHash(file_id, chunk_no), f);
     }
 
     @Override
@@ -47,8 +55,11 @@ public class BackupChannelHandler extends ChannelHandler {
     }
 
     private void handlePutchunk(CommonMessage info) {
-        // TODO: Stop reclaim protocol here if it will be ran (Store Future just like in the CHUNK sub-protocol)
+        stopRepeatedPutchunkSending(info);
+        storeChunk(info);
+    }
 
+    private void storeChunk(CommonMessage info) {
         try {
             final byte[] body = info.getBody();
             final String file_id = info.getFileId();
@@ -78,5 +89,20 @@ public class BackupChannelHandler extends ChannelHandler {
         } catch (InvalidMessageFormatException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * For stopping the repeated sending of PUTCHUNKs for the reclaim protocol
+     * @param info message to test for repeated PUTCHUNKs
+     */
+    private void stopRepeatedPutchunkSending(CommonMessage info) {
+        final String chunk_hash = ProtocolDefinitions.calcChunkHash(info.getFileId(), info.getChunkNo());
+        Future f = this.putchunkMessagesToSend.get(chunk_hash);
+        if (f == null) {
+            return;
+        }
+        System.out.println("ohno REPEATED PUTCHUNK DETECTED - STOPPING THE SENDING");
+        f.cancel(true);
+        this.putchunkMessagesToSend.remove(chunk_hash);
     }
 }

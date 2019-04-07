@@ -112,7 +112,7 @@ public class StorageManager {
     }
 
     /**
-     * For use in restoring
+     * For use in restoring, for appending to the file that is currently being written to
      *
      * @param file_name name of file that is being restored
      */

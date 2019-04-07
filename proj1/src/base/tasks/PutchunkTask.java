@@ -14,8 +14,8 @@ public class PutchunkTask extends Task {
     private final byte[] body;
     private int chunk_no;
 
-    public PutchunkTask(String file_name, int chunk_no, int replication_deg, byte[] body) {
-        super(file_name);
+    public PutchunkTask(String file_id, int chunk_no, int replication_deg, byte[] body) {
+        super(file_id);
         this.chunk_no = chunk_no;
         this.body = body;
         this.replication_deg = replication_deg;

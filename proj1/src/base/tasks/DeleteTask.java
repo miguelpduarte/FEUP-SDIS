@@ -6,8 +6,8 @@ import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 
 public class DeleteTask extends Task {
-    public DeleteTask(String file_name) {
-        super(file_name);
+    public DeleteTask(String file_id) {
+        super(file_id);
         prepareMessage();
         startCommuncation();
     }
