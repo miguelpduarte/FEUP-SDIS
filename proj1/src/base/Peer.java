@@ -5,6 +5,8 @@ import base.channels.ChannelManager;
 import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
 import base.messages.MessageFactory;
+import base.storage.ChunkBackupInfo;
+import base.storage.ChunkBackupState;
 import base.storage.StorageManager;
 import base.tasks.DeleteTask;
 import base.tasks.PutchunkTask;
@@ -14,6 +16,8 @@ import base.tasks.TaskManager;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class Peer extends UnicastRemoteObject implements IPeer {
     public Peer(String mc_hostname, int mc_port, String mdb_hostname, int mdb_port, String mdr_hostname, int mdr_port) throws IOException {
@@ -106,6 +110,20 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
     @Override
     public int setMaxDiskSpace(int disk_space_kbs) {
+        System.out.println("Peer.setMaxDiskSpace");
+        System.out.println("disk_space_kbs = [" + disk_space_kbs + "]");
+
+        StorageManager.getInstance().setMaxSpaceKbytes(disk_space_kbs);
+
+        if (StorageManager.getInstance().storageOverCapacity()) {
+            final Stream<ChunkBackupInfo> chunks_candidate_for_removal = ChunkBackupState.getInstance().getChunksCandidateForRemoval();
+            do {
+                final Optional<ChunkBackupInfo> candidate_for_removal = chunks_candidate_for_removal.findFirst();
+
+            } while(StorageManager.getInstance().storageOverCapacity());
+        }
+
+
         return 0;
     }
 

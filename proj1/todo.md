@@ -25,9 +25,17 @@ todo: peer that does backups should store information just like ChunkBackupState
 
 ~~todo: handling REMOVED with PUTCHUNKs to the network if the replication degree has fallen, etc~~ - done, needs testing
 
+todo: adicionar ao chunkbackupstate mal se recebe o putchunk, apagar se der erro (assim apanham-se todos os STOREDs ou mais vá)
+
 todo: discuss the reclaim strategy:
 - Current idea:
     - Try removing chunks that already have over the minimum required replication degree
     - After that, start by the ones that have the smallest size (because it might be easier to fit them elsewhere)
 
 ~~todo: delete must also look at the peer's own files lol <- Very easy but important~~ - done but cannot check due to the sender id field encoding the file id
+
+todo: maybe dont make so many copies of byte arrays when it is not necessary (such as copying the body of a message with CommonMessage.getBody())
+
+enhancements if there is time:
+- Sliding window for Restore protocol (instead of Stop & Wait like currently implemented)
+- If a file cannot have all of its chunks backed up (failure to backup) notify of failure and send delete message for that file_id, stopping the other PUTCHUNK tasks

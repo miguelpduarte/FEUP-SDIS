@@ -39,9 +39,11 @@ public class StorageManager {
     }
 
     public synchronized void setMaxSpaceKbytes(int max_space_kbytes) {
-        System.out.println("StorageManager.setMaxSpaceKbytes -> TODO: Reclaim space");
         this.max_space_kbytes = max_space_kbytes;
-        // TODO: Make checks and reclaim space if needed
+    }
+
+    public synchronized boolean storageOverCapacity() {
+        return this.occupied_space_bytes > this.max_space_kbytes * ProtocolDefinitions.KB_TO_BYTE;
     }
 
     public void initStorage() {
@@ -93,6 +95,41 @@ public class StorageManager {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean removeChunk(String file_id, int chunk_no) {
+        //TODO
+        /*
+        if (!this.hasChunk(file_id, chunk_no)) {
+            System.out.printf("Error deleting: Chunk with file_id '%s' and chunk_no '%d' is not stored", file_id, chunk_no);
+            return false;
+        }
+
+        System.out.printf("StorageManager.removeChunk::Deleting chunk with file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
+
+        // Ensuring that the parent directories exist so that the FileOutputStream can create the file correctly
+        final String chunk_parent_dir = String.format("%s/%s/", this.backup_dirname, file_id);
+        new File(chunk_parent_dir).mkdirs();
+
+        final String chunk_path = String.format("%schk%d", chunk_parent_dir, chunk_no);
+
+        try (FileOutputStream fos = new FileOutputStream(chunk_path)) {
+            fos.write(data);
+            //fos.close(); There is unnecessary since the instance of "fos" is created inside a try-with-resources statement, which will automatically close the FileOutputStream in case of failure
+            // See https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html
+
+            // Registration that a chunk was stored is done by the caller due to needing the replication degree, which is useless here
+
+            // However, the number of bytes used is relevant so it is changed here
+            this.updateOccupiedSpace(data.length);
+            System.out.println("DBG: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes");
+            return true;
+        } catch (IOException e) {
+            System.out.printf("StorageManager.storeChunk::Error in storing chunk with file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
+            e.printStackTrace();
+            return false;
+        }
+        */
     }
 
     /**

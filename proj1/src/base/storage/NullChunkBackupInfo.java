@@ -7,15 +7,15 @@ public class NullChunkBackupInfo extends ChunkBackupInfo {
     }
 
     @Override
-    public void incrementNumStored() {
+    public void addReplicator(String peer_id) {
     }
 
     @Override
-    public void decrementNumStored() {
+    public void removeReplicator(String peer_id) {
     }
 
     @Override
-    public boolean isOverReplicationDegree() {
+    public boolean isReplicated() {
         return true;
     }
 }

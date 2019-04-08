@@ -66,9 +66,9 @@ public class ControlChannelHandler extends ChannelHandler {
         final int chunk_no = info.getChunkNo();
 
         final ChunkBackupInfo chunk_backup_info = ChunkBackupState.getInstance().getChunkBackupInfo(file_id, chunk_no);
-        chunk_backup_info.decrementNumStored();
+        chunk_backup_info.removeReplicator(info.getSenderId());
 
-        if (!chunk_backup_info.isOverReplicationDegree()) {
+        if (!chunk_backup_info.isReplicated()) {
             // TODO: Start PUTHCUNK subprotocol for replication after a random delay, while checking if no one else is doing the same
             System.out.printf("Chunk no longer over replication degree - file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
 
@@ -117,7 +117,7 @@ public class ControlChannelHandler extends ChannelHandler {
 
     private void handleStored(CommonMessage info) {
         // If the chunk is backed up here, then count up the number of replicators in the system
-        ChunkBackupState.getInstance().getChunkBackupInfo(info.getFileId(), info.getChunkNo()).incrementNumStored();
+        ChunkBackupState.getInstance().getChunkBackupInfo(info.getFileId(), info.getChunkNo()).addReplicator(info.getSenderId());
 
         Task t = TaskManager.getInstance().getTask(info);
         if (t != null) {

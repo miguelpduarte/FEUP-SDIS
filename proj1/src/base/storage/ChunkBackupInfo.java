@@ -1,37 +1,43 @@
 package base.storage;
 
+import base.ProtocolDefinitions;
+
+import java.util.concurrent.ConcurrentHashMap;
+
 public class ChunkBackupInfo {
     private final String file_id;
     private final int chunk_no;
     private final int replication_degree;
-    private int n_stored;
+    private final ConcurrentHashMap<String, Object> replicators = new ConcurrentHashMap<>();
     private final int size_bytes;
 
-    public ChunkBackupInfo(String file_id, int chunk_no, int replication_degree, int n_stored, int size_bytes) {
+    private static final Object MOCK_HASHMAP_SET_VALUE = new Object();
+
+    public ChunkBackupInfo(String file_id, int chunk_no, int replication_degree, int size_bytes) {
         this.file_id = file_id;
         this.chunk_no = chunk_no;
         this.replication_degree = replication_degree;
-        this.n_stored = n_stored;
+        // This own peer also counts (thus the count starts at 1, with the own peer being the storer)
+        this.replicators.put(ProtocolDefinitions.SERVER_ID, MOCK_HASHMAP_SET_VALUE);
         this.size_bytes = size_bytes;
     }
 
-    public ChunkBackupInfo(String file_id, int chunk_no, int replication_degree, int size_bytes) {
-        // This own peer also counts (thus the count starts at 1)
-        this(file_id, chunk_no, replication_degree, 1, size_bytes);
+    public void addReplicator(String peer_id) {
+        this.replicators.put(peer_id, MOCK_HASHMAP_SET_VALUE);
+        System.out.printf("INC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
     }
 
-    public void incrementNumStored() {
-        this.n_stored++;
-        System.out.printf("INC! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", this.file_id, this.chunk_no, this.n_stored, this.replication_degree);
+    public void removeReplicator(String peer_id) {
+        this.replicators.remove(peer_id);
+        System.out.printf("DEC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
     }
 
-    public void decrementNumStored() {
-        this.n_stored--;
-        System.out.printf("DEC! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", this.file_id, this.chunk_no, this.n_stored, this.replication_degree);
+    public boolean isReplicated() {
+        return this.replicators.size() >= this.replication_degree;
     }
 
-    public boolean isOverReplicationDegree() {
-        return this.n_stored >= this.replication_degree;
+    public boolean isOverReplicated() {
+        return this.replicators.size() > this.replication_degree;
     }
 
     public String getFileId() {
@@ -48,5 +54,18 @@ public class ChunkBackupInfo {
 
     public int getReplicationDegree() {
         return replication_degree;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "ChunkBackupInfo:\n\tfile_id: '%s', chunk_no: '%d',\n\treplication_degree: '%d', replicators: '%d', size_bytes: '%d'\n\tdiff_to_desired_replication_degree: '%d'\n",
+                this.file_id, this.chunk_no,
+                this.replication_degree, this.replicators.size(), this.size_bytes,
+                this.getDiffToDesiredReplicationDegree());
+    }
+
+    public int getDiffToDesiredReplicationDegree() {
+        return this.replicators.size() - this.replication_degree;
     }
 }
