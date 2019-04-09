@@ -1,0 +1,5 @@
+Para DELETE e REMOVED ter retries como nas outras? (1, 2, 4, 8 segundos exponential backoff)
+
+Qual o nível de concorrência por operação de restore esperado? Sliding window vs Stop&Wait
+
+Controlo de fluxo basta o sugerido ou deveria ser feito mais? (sugerido: Exponential backoff [1,2,4,8] e delays random 0-400ms)
