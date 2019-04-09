@@ -6,7 +6,6 @@ The delay also seems to not be working in terms of stopping the PUTCHUNKs?
 
 - Store information for the files that the peer requested to be backed up (initiator peer)
     - (peer that does backups should store information just like ChunkBackupState -> necessary for STATE)
-- Fix RECLAIM repeated PUTCHUNKS
 - consider protocol version and other things like that in message parsing:
     - ~~Reading body from correct CRLFs~~ - done and working
     - Not yet looking at the protocol version
@@ -15,7 +14,13 @@ The delay also seems to not be working in terms of stopping the PUTCHUNKs?
       - Try removing chunks that already have over the minimum required replication degree
       - After that, start by the ones that have the smallest size (because it might be easier to fit them elsewhere)
 - ~~todo: handling REMOVED with PUTCHUNKs to the network if the replication degree has fallen, etc~~ - done, needs testing
+- ~~Fix RECLAIM repeated PUTCHUNKS~~ - Was fine after all, but see below
 - Test RECLAIM more extensively, especially the stopping of crossed PUTCHUNKs (maybe the "bug" was simply one doing the backup of one chunk and the other of the other one)
+
+### Enhancements:
+
+- Restore enhancement, use passive FTP idea with ServerSocket with a simple timeout (setSoTimeout)
+- Backup enhancement? Need to bounce off some ideas
 
 ## Relvant TODOs:
 
