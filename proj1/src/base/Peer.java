@@ -8,16 +8,13 @@ import base.messages.MessageFactory;
 import base.storage.ChunkBackupInfo;
 import base.storage.ChunkBackupState;
 import base.storage.StorageManager;
-import base.tasks.DeleteTask;
-import base.tasks.PutchunkTask;
-import base.tasks.RestoreTask;
-import base.tasks.TaskManager;
+import base.tasks.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.Collection;
+import java.util.List;
 
 public class Peer extends UnicastRemoteObject implements IPeer {
     public Peer(String mc_hostname, int mc_port, String mdb_hostname, int mdb_port, String mdr_hostname, int mdr_port) throws IOException {
@@ -113,22 +110,66 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("Peer.setMaxDiskSpace");
         System.out.println("disk_space_kbs = [" + disk_space_kbs + "]");
 
-        StorageManager.getInstance().setMaxSpaceKbytes(disk_space_kbs);
+        try {
+            StorageManager.getInstance().setMaxSpaceKbytes(disk_space_kbs);
 
-        if (StorageManager.getInstance().storageOverCapacity()) {
-            final Stream<ChunkBackupInfo> chunks_candidate_for_removal = ChunkBackupState.getInstance().getChunksCandidateForRemoval();
-            do {
-                final Optional<ChunkBackupInfo> candidate_for_removal = chunks_candidate_for_removal.findFirst();
+            if (StorageManager.getInstance().storageOverCapacity()) {
+                final List<ChunkBackupInfo> chunks_candidate_for_removal = ChunkBackupState.getInstance().getChunksCandidateForRemoval();
 
-            } while(StorageManager.getInstance().storageOverCapacity());
+                int candidate_idx = 0;
+                do {
+                    if (candidate_idx >= chunks_candidate_for_removal.size()) {
+                        System.err.print("Exhausted all the candidate chunks and still over capacity!\n");
+                        return -1;
+                    }
+
+                    final ChunkBackupInfo candidate_chunk = chunks_candidate_for_removal.get(candidate_idx);
+                    System.out.println("candidate_for_removal = " + candidate_chunk);
+
+                    // Delete Chunk
+                    if (!StorageManager.getInstance().removeChunk(candidate_chunk.getFileId(), candidate_chunk.getChunkNo())) {
+                        System.err.printf("Error in removing chunk for file_id '%s' and no '%d'\n", candidate_chunk.getFileId(), candidate_chunk.getChunkNo());
+                    } else {
+                        // Start broadcasting that the chunk was removed
+                        TaskManager.getInstance().registerTask(new RemovedTask(candidate_chunk.getFileId(), candidate_chunk.getChunkNo()));
+                    }
+
+                    candidate_idx++;
+                } while (StorageManager.getInstance().storageOverCapacity());
+            } else {
+                System.out.println("Did not need to remove anything");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
 
         return 0;
     }
 
     @Override
     public String getServiceState() {
-        return String.format("Service State of Peer %s:\n", ProtocolDefinitions.SERVER_ID);
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Service State of Peer ").append(ProtocolDefinitions.SERVER_ID).append("\n");
+
+        sb.append("Initiated Backups:\n");
+        sb.append("todo\n\n");
+
+        sb.append("Stored Chunks:\n");
+
+        final Collection<ChunkBackupInfo> allBackedUpChunksInfo = ChunkBackupState.getInstance().getAllBackedUpChunksInfo();
+
+        if (allBackedUpChunksInfo.isEmpty()) {
+            sb.append("No chunks are currently stored\n");
+        } else {
+            for (ChunkBackupInfo chunkBackupInfo : allBackedUpChunksInfo) {
+                sb.append(chunkBackupInfo).append("\n");
+            }
+        }
+
+        sb.append("\nPeer storage (KBytes):\n");
+        sb.append("Maximum Capacity: ").append(StorageManager.getInstance().getMaximumCapacity()).append("\tCurrent Usage: ").append(StorageManager.getInstance().getOccupiedSpaceBytes() / 1000);
+
+        return sb.toString();
     }
 }

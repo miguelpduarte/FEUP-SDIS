@@ -24,12 +24,12 @@ public class ChunkBackupInfo {
 
     public void addReplicator(String peer_id) {
         this.replicators.put(peer_id, MOCK_HASHMAP_SET_VALUE);
-        System.out.printf("INC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
+        //System.out.printf("INC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
     }
 
     public void removeReplicator(String peer_id) {
         this.replicators.remove(peer_id);
-        System.out.printf("DEC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
+        //System.out.printf("DEC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
     }
 
     public boolean isReplicated() {
@@ -59,7 +59,7 @@ public class ChunkBackupInfo {
     @Override
     public String toString() {
         return String.format(
-                "ChunkBackupInfo:\n\tfile_id: '%s', chunk_no: '%d',\n\treplication_degree: '%d', replicators: '%d', size_bytes: '%d'\n\tdiff_to_desired_replication_degree: '%d'\n",
+                "file_id: '%s', chunk_no: '%d',\nreplication degree: '%d', #replicators: '%d', size(bytes): '%d'\ndiff to replication degree: '%d'\n",
                 this.file_id, this.chunk_no,
                 this.replication_degree, this.replicators.size(), this.size_bytes,
                 this.getDiffToDesiredReplicationDegree());

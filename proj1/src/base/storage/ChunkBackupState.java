@@ -2,8 +2,11 @@ package base.storage;
 
 import base.ProtocolDefinitions;
 
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ChunkBackupState {
@@ -44,7 +47,7 @@ public class ChunkBackupState {
      * Calculates the best chunks to remove, in order
      * @return The best chunks to remove for the reclaim protocol, ordered by how good they are. It is a Stream and thus should be consumed using Stream.findFirst() until the space restriction is respected.
      */
-    public Stream<ChunkBackupInfo> getChunksCandidateForRemoval() {
+    public List<ChunkBackupInfo> getChunksCandidateForRemoval() {
         long start_time = System.currentTimeMillis();
 
         final Stream<ChunkBackupInfo> overReplicated = this.backed_up_chunks_info.values()
@@ -63,8 +66,14 @@ public class ChunkBackupState {
 
         // candidatesForRemoval.forEach(chunkBackupInfo -> System.out.println("chunkBackupInfo = " + chunkBackupInfo)); // DBG Line -> Careful as this consumes the Stream
 
+        List<ChunkBackupInfo> output = candidatesForRemoval.collect(Collectors.toList());
+
         System.out.println("getChunksCandidateForRemoval::Time elapsed: " + (System.currentTimeMillis() - start_time));
 
-        return candidatesForRemoval;
+        return output;
+    }
+
+    public Collection<ChunkBackupInfo> getAllBackedUpChunksInfo() {
+        return this.backed_up_chunks_info.values();
     }
 }

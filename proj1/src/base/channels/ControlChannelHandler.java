@@ -69,8 +69,7 @@ public class ControlChannelHandler extends ChannelHandler {
         chunk_backup_info.removeReplicator(info.getSenderId());
 
         if (!chunk_backup_info.isReplicated()) {
-            // TODO: Start PUTHCUNK subprotocol for replication after a random delay, while checking if no one else is doing the same
-            System.out.printf("Chunk no longer over replication degree - file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
+            System.out.printf("Chunk is now underreplicated, file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
 
             // Read from file
             final byte[] chunk_data = StorageManager.getInstance().getStoredChunk(file_id, chunk_no);
@@ -89,6 +88,8 @@ public class ControlChannelHandler extends ChannelHandler {
             }, ProtocolDefinitions.getRandomMessageDelayMilis());
 
             ChannelManager.getInstance().getBackup().registerPutchunkToSend(info.getFileId(), info.getChunkNo(), f);
+        } else {
+            System.out.printf("No need to re-replicate with PUTCHUNK, file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
         }
     }
 

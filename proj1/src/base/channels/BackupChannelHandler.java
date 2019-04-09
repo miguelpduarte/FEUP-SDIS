@@ -101,7 +101,7 @@ public class BackupChannelHandler extends ChannelHandler {
         if (f == null) {
             return;
         }
-        System.out.println("ohno REPEATED PUTCHUNK DETECTED - STOPPING THE SENDING");
+        System.out.println("### REPEATED PUTCHUNK DETECTED - STOPPING THE SENDING");
         f.cancel(true);
         this.putchunkMessagesToSend.remove(chunk_hash);
     }
