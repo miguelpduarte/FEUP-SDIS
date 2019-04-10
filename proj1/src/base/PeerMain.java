@@ -1,5 +1,6 @@
 package base;
 
+import base.shutdownandstartup.ShutdownAndStartupHandler;
 import base.storage.StorageManager;
 
 import java.rmi.RemoteException;
@@ -54,5 +55,8 @@ public class PeerMain {
 
         StorageManager.getInstance().initStorage();
         System.out.println("Storage initialized");
+        ShutdownAndStartupHandler.restoreOnStartup();
+
+        ShutdownAndStartupHandler.installShutdownHook();
     }
 }

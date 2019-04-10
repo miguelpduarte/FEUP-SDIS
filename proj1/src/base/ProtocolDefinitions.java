@@ -6,6 +6,7 @@ public class ProtocolDefinitions {
     public final static String CRLF = "\r\n";
     public final static byte CR = 0xD;
     public final static byte LF = 0xA;
+    public static final String STORED_CHUNKS_BACKUP_INFORMATION_FILENAME = "stored_chunks.sdis";
 
     public static String VERSION;
     public static String SERVER_ID;

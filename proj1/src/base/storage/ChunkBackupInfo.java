@@ -2,16 +2,17 @@ package base.storage;
 
 import base.ProtocolDefinitions;
 
+import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ChunkBackupInfo {
+public class ChunkBackupInfo implements Serializable {
     private final String file_id;
     private final int chunk_no;
     private final int replication_degree;
-    private final ConcurrentHashMap<String, Object> replicators = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Boolean> replicators = new ConcurrentHashMap<>();
     private final int size_bytes;
 
-    private static final Object MOCK_HASHMAP_SET_VALUE = new Object();
+    private static final Boolean MOCK_HASHMAP_SET_VALUE = true;
 
     public ChunkBackupInfo(String file_id, int chunk_no, int replication_degree, int size_bytes) {
         this.file_id = file_id;

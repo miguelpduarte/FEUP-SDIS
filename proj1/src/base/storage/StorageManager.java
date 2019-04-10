@@ -15,6 +15,7 @@ public class StorageManager {
 
     private int occupied_space_bytes = 0;
     private int max_space_kbytes = ProtocolDefinitions.INITIAL_STORAGE_MAX_KBS;
+    private String chunk_backup_information_path;
 
     public static StorageManager getInstance() {
         return instance;
@@ -23,11 +24,14 @@ public class StorageManager {
     private StorageManager() {
     }
 
-    // TODO: Use
     /// Methods for managing occupied space
 
     private synchronized void updateOccupiedSpace(int diff_bytes) {
         this.occupied_space_bytes += diff_bytes;
+    }
+
+    public synchronized void setOccupiedSpaceBytes(int occupied_space_bytes) {
+        this.occupied_space_bytes = occupied_space_bytes;
     }
 
     public synchronized int getOccupiedSpaceBytes() {
@@ -46,18 +50,26 @@ public class StorageManager {
         return this.occupied_space_bytes > this.max_space_kbytes * ProtocolDefinitions.KB_TO_BYTE;
     }
 
+    public synchronized int getMaximumCapacity() {
+        return this.max_space_kbytes;
+    }
+
     public void initStorage() {
         // Create the directories for this peer (see Moodle):
         // peerX/backup and peerX/restored
         final String peer_dirname = String.format("peer%s", ProtocolDefinitions.SERVER_ID);
         this.backup_dirname = peer_dirname + "/" + ProtocolDefinitions.BACKUP_DIRNAME + "/";
         this.restored_dirname = peer_dirname + "/" + ProtocolDefinitions.RESTORED_DIRNAME + "/";
+        this.chunk_backup_information_path = peer_dirname + "/" + ProtocolDefinitions.STORED_CHUNKS_BACKUP_INFORMATION_FILENAME;
 
         // Creating the actual directories:
         new File(this.backup_dirname).mkdirs();
         new File(this.restored_dirname).mkdirs();
 
-        //TODO: Check already stored chunks and insert that data into ChunkBackupState (must also check the number of "storeds" somehow - read from file?)
+        // Creating the backup files
+        if (!new File(this.chunk_backup_information_path).exists()) {
+            StorageManager.createEmptyFile(this.chunk_backup_information_path);
+        }
     }
 
     public boolean storeChunk(String file_id, int chunk_no, byte[] data) {
@@ -118,13 +130,17 @@ public class StorageManager {
      * Used to ensure that a file exists and that it is empty before starting to append to it
      * @param file_name file to create or empty
      */
-    public boolean createEmptyFile(String file_name) {
+    public boolean createEmptyFileForRestore(String file_name) {
         final String file_path = String.format("%s/%s", this.restored_dirname, file_name);
 
+        return StorageManager.createEmptyFile(file_path);
+    }
+
+    public static boolean createEmptyFile(String file_path) {
         try (FileOutputStream ignored = new FileOutputStream(file_path)) {
             return true;
         } catch (IOException e) {
-            System.out.printf("StorageManager.createEmptyFile::Error creating empty file for name '%s'", file_name);
+            System.out.printf("StorageManager.createEmptyFile::Error creating empty file '%s'", file_path);
             e.printStackTrace();
             return false;
         }
@@ -233,7 +249,7 @@ public class StorageManager {
         }
     }
 
-    public synchronized int getMaximumCapacity() {
-        return this.max_space_kbytes;
+    public String getChunkBackupInformationPath() {
+        return chunk_backup_information_path;
     }
 }

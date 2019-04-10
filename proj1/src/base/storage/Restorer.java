@@ -26,7 +26,7 @@ public class Restorer implements Keyable {
     }
 
     private void writer() {
-        if (!StorageManager.getInstance().createEmptyFile(file_name)) {
+        if (!StorageManager.getInstance().createEmptyFileForRestore(file_name)) {
             System.out.printf("Restorer.writer::Error creating empty file for file_name '%s', aborting!\n", file_name);
         }
 

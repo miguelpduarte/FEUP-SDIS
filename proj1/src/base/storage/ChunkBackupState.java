@@ -2,6 +2,7 @@ package base.storage;
 
 import base.ProtocolDefinitions;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -9,12 +10,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ChunkBackupState {
+public class ChunkBackupState implements Serializable {
     private static ChunkBackupState instance = new ChunkBackupState();
 
     public static ChunkBackupState getInstance() {
         return instance;
     }
+
+    public static void setInstance(ChunkBackupState instance) { ChunkBackupState.instance = instance; }
 
     private ChunkBackupState() {
     }
