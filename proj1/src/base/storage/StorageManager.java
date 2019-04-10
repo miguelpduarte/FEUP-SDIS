@@ -1,11 +1,9 @@
 package base.storage;
 
 import base.ProtocolDefinitions;
+import base.storage.stored.ChunkBackupState;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Objects;
 
 public class StorageManager {
@@ -100,7 +98,7 @@ public class StorageManager {
 
             // However, the number of bytes used is relevant so it is changed here
             this.updateOccupiedSpace(data.length);
-            System.out.println("DBG: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes");
+            // System.out.println("DBG: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes"); // TODO REMOVE
             return true;
         } catch (IOException e) {
             System.out.printf("StorageManager.storeChunk::Error in storing chunk with file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);
@@ -119,8 +117,10 @@ public class StorageManager {
 
         // Ensuring that the parent directories exist so that the FileOutputStream can create the file correctly
         final String chunk_path = String.format("%s/%s/chk%s", this.backup_dirname, file_id, chunk_no);
+        File chunk = new File(chunk_path);
+        this.updateOccupiedSpace(-1 * (int)chunk.length());
 
-        final boolean was_deleted = new File(chunk_path).delete();
+        final boolean was_deleted = chunk.delete();
         // Register that the chunk is no longer backed up
         ChunkBackupState.getInstance().unregisterBackup(file_id, chunk_no);
         return was_deleted;
@@ -151,11 +151,12 @@ public class StorageManager {
      *
      * @param file_name name of file that is being restored
      */
-    public boolean writeToFileEnd(String file_name, byte[] data) {
+    public boolean writeToFileEnd(String file_name, byte[] data, int chunk_no) {
         final String file_path = String.format("%s/%s", this.restored_dirname, file_name);
 
-        try (FileOutputStream fos = new FileOutputStream(file_path, true)) {
-            fos.write(data, 0, data.length);
+        try (RandomAccessFile raf = new RandomAccessFile(file_path, "rw")) {
+            raf.seek(chunk_no * ProtocolDefinitions.CHUNK_MAX_SIZE_BYTES);
+            raf.write(data);
             return true;
         } catch (IOException e) {
             System.out.printf("StorageManager.writeToFileEnd::Error in appending to file '%s'\n", file_name);
@@ -201,12 +202,11 @@ public class StorageManager {
         // TODO: Maybe fix verboseness
         for (File chunk : Objects.requireNonNull(file_backup_dir.listFiles())) {
             // Space was freed so the used space is updated
-            System.out.println("chunk.length() = " + chunk.length());
             this.updateOccupiedSpace(-1 * (int)chunk.length());
             // Unregistering as backed up chunks
             final int chunk_no = Integer.parseInt(chunk.getName().substring(3));
             ChunkBackupState.getInstance().unregisterBackup(file_id, chunk_no);
-            System.out.println("DBG2: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes");
+            // System.out.println("DBG2: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes"); // TODO REMOVE
             dbg_n_removed++;
 
             // Deleting after due to needing the original size for updating the occupied space

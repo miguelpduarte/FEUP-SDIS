@@ -50,9 +50,9 @@ public class RestoreTask extends Task {
                 // Last chunk, unregister this task and eventually stop the Restorer that is running
                 this.unregister();
                 r.stopWriter();
-                r.addChunk(msg_body);
+                r.addChunk(msg_body, this.chunk_no);
             } else {
-                r.addChunk(msg_body);
+                r.addChunk(msg_body, this.chunk_no);
                 // Still have more chunks, increment chunk_no and reset number of retries.
                 // Then, re-key the task (to receive the correct messages), re-generate the message and restart communication
                 this.chunk_no++;

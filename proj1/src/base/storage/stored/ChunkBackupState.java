@@ -1,4 +1,4 @@
-package base.storage;
+package base.storage.stored;
 
 import base.ProtocolDefinitions;
 

@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Restorer implements Keyable {
     private final String file_name;
     private final String file_id;
-    private final BlockingQueue<byte[]> chunks_to_store = new LinkedBlockingQueue<>();
+    private final BlockingQueue<RestorerData> chunks_to_store = new LinkedBlockingQueue<>();
     private Future restoring_thread;
     private boolean writer_running = true;
 
@@ -32,9 +32,9 @@ public class Restorer implements Keyable {
 
         while (this.writer_running) {
             try {
-                byte[] chunk_to_store = this.chunks_to_store.take();
+                RestorerData chunk_to_store = this.chunks_to_store.take();
                 System.out.println("Writing to file");
-                StorageManager.getInstance().writeToFileEnd(file_name, chunk_to_store);
+                StorageManager.getInstance().writeToFileEnd(file_name, chunk_to_store.getData(), chunk_to_store.getChunkNo());
             } catch (InterruptedException ignored) {
             }
         }
@@ -66,7 +66,7 @@ public class Restorer implements Keyable {
      *
      * @param chunk_data
      */
-    public void addChunk(byte[] chunk_data) {
-        this.chunks_to_store.add(chunk_data);
+    public void addChunk(byte[] chunk_data, int chunk_no) {
+        this.chunks_to_store.add(new RestorerData(chunk_data, chunk_no));
     }
 }

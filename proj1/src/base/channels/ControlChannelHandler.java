@@ -4,8 +4,11 @@ import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
-import base.storage.ChunkBackupInfo;
-import base.storage.ChunkBackupState;
+import base.storage.requested.RequestedBackupFile;
+import base.storage.requested.RequestedBackupFileChunk;
+import base.storage.requested.RequestedBackupsState;
+import base.storage.stored.ChunkBackupInfo;
+import base.storage.stored.ChunkBackupState;
 import base.storage.StorageManager;
 import base.tasks.PutchunkTask;
 import base.tasks.Task;
@@ -66,6 +69,11 @@ public class ControlChannelHandler extends ChannelHandler {
         final String file_id = info.getFileId();
         final int chunk_no = info.getChunkNo();
 
+        RequestedBackupsState.getInstance()
+                .getRequestedFileBackupInfo(info.getFileId())
+                .getChunk(info.getChunkNo())
+                .removeReplicator(info.getSenderId());
+
         final ChunkBackupInfo chunk_backup_info = ChunkBackupState.getInstance().getChunkBackupInfo(file_id, chunk_no);
         chunk_backup_info.removeReplicator(info.getSenderId());
 
@@ -96,6 +104,7 @@ public class ControlChannelHandler extends ChannelHandler {
 
     private void handleDelete(CommonMessage info) {
         StorageManager.getInstance().removeFileChunksIfStored(info.getFileId());
+        RequestedBackupsState.getInstance().unregisterRequestedFile(info.getFileId());
     }
 
     private void handleGetchunk(CommonMessage info) {
@@ -120,6 +129,10 @@ public class ControlChannelHandler extends ChannelHandler {
     private void handleStored(CommonMessage info) {
         // If the chunk is backed up here, then count up the number of replicators in the system
         ChunkBackupState.getInstance().getChunkBackupInfo(info.getFileId(), info.getChunkNo()).addReplicator(info.getSenderId());
+
+        final RequestedBackupFile requestedFileBackupInfo = RequestedBackupsState.getInstance().getRequestedFileBackupInfo(info.getFileId());
+        final RequestedBackupFileChunk chunk = requestedFileBackupInfo.getChunk(info.getChunkNo());
+        chunk.addReplicator(info.getSenderId());
 
         Task t = TaskManager.getInstance().getTask(info);
         if (t != null) {

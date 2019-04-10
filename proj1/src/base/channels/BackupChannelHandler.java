@@ -5,7 +5,7 @@ import base.ThreadManager;
 import base.messages.CommonMessage;
 import base.messages.InvalidMessageFormatException;
 import base.messages.MessageFactory;
-import base.storage.ChunkBackupState;
+import base.storage.stored.ChunkBackupState;
 import base.storage.StorageManager;
 
 import java.io.IOException;

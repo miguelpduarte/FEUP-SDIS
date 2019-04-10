@@ -1,4 +1,4 @@
-package base.storage;
+package base.storage.stored;
 
 import base.ProtocolDefinitions;
 
@@ -12,19 +12,17 @@ public class ChunkBackupInfo implements Serializable {
     private final ConcurrentHashMap<String, Boolean> replicators = new ConcurrentHashMap<>();
     private final int size_bytes;
 
-    private static final Boolean MOCK_HASHMAP_SET_VALUE = true;
-
     public ChunkBackupInfo(String file_id, int chunk_no, int replication_degree, int size_bytes) {
         this.file_id = file_id;
         this.chunk_no = chunk_no;
         this.replication_degree = replication_degree;
         // This own peer also counts (thus the count starts at 1, with the own peer being the storer)
-        this.replicators.put(ProtocolDefinitions.SERVER_ID, MOCK_HASHMAP_SET_VALUE);
+        this.replicators.put(ProtocolDefinitions.SERVER_ID, ProtocolDefinitions.MOCK_HASHMAP_SET_VALUE);
         this.size_bytes = size_bytes;
     }
 
     public void addReplicator(String peer_id) {
-        this.replicators.put(peer_id, MOCK_HASHMAP_SET_VALUE);
+        this.replicators.put(peer_id, ProtocolDefinitions.MOCK_HASHMAP_SET_VALUE);
         //System.out.printf("INC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
     }
 

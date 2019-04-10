@@ -1,6 +1,7 @@
-package base.shutdownandstartup;
+package base.persistentstate;
 
-import base.storage.ChunkBackupState;
+import base.storage.stored.ChunkBackupState;
+import base.storage.requested.RequestedBackupsState;
 import base.storage.StorageManager;
 
 import java.io.*;
@@ -17,6 +18,7 @@ public class ShutdownAndStartupHandler {
         ) {
             final RestoreInformationWrapper riw = (RestoreInformationWrapper) ois.readObject();
             ChunkBackupState.setInstance(riw.getCbsInstance());
+            RequestedBackupsState.setInstance(riw.getRbsInstance());
             StorageManager.getInstance().setOccupiedSpaceBytes(riw.getOccupiedSpaceBytes());
         }
     }
@@ -26,7 +28,9 @@ public class ShutdownAndStartupHandler {
                 FileOutputStream fos = new FileOutputStream(StorageManager.getInstance().getChunkBackupInformationPath());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)
         ) {
-            oos.writeObject(new RestoreInformationWrapper(ChunkBackupState.getInstance(), StorageManager.getInstance().getOccupiedSpaceBytes(), null));
+            oos.writeObject(new RestoreInformationWrapper(
+                    ChunkBackupState.getInstance(), StorageManager.getInstance().getOccupiedSpaceBytes(), RequestedBackupsState.getInstance()
+            ));
         }
     }
 

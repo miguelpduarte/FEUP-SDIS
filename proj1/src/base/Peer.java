@@ -5,9 +5,12 @@ import base.channels.ChannelManager;
 import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
 import base.messages.MessageFactory;
-import base.storage.ChunkBackupInfo;
-import base.storage.ChunkBackupState;
-import base.storage.StorageManager;
+import base.storage.*;
+import base.storage.requested.RequestedBackupFile;
+import base.storage.requested.RequestedBackupFileChunk;
+import base.storage.requested.RequestedBackupsState;
+import base.storage.stored.ChunkBackupInfo;
+import base.storage.stored.ChunkBackupState;
 import base.tasks.*;
 
 import java.io.File;
@@ -57,14 +60,15 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         final String file_name = new File(file_path).getName();
         final String file_id = MessageFactory.filenameEncode(file_name);
 
-        // Testing by creating a dummy tasksPutchunkTask that will autonomously communicate:
+        RequestedBackupsState.getInstance().registerRequestedFile(new RequestedBackupFile(file_id, file_name, replication_factor));
+
         try {
             byte[] file_data = StorageManager.readFromFile(file_path);
             byte[][] split_file_data = MessageFactory.splitFileContents(file_data);
 
             for (int i = 0; i < split_file_data.length; ++i) {
-                // System.out.println("i = " + i);
                 TaskManager.getInstance().registerTask(new PutchunkTask(file_id, i, replication_factor, split_file_data[i]));
+                RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).registerChunk(new RequestedBackupFileChunk(file_id, i, replication_factor));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -101,6 +105,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         TaskManager.getInstance().registerTask(new DeleteTask(file_id));
         // Also deleting own files if they exist
         StorageManager.getInstance().removeFileChunksIfStored(MessageFactory.filenameEncode(file_name));
+        RequestedBackupsState.getInstance().unregisterRequestedFile(file_id);
 
         return 0;
     }
@@ -152,15 +157,23 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
         sb.append("Service State of Peer ").append(ProtocolDefinitions.SERVER_ID).append("\n");
 
-        sb.append("Initiated Backups:\n");
-        sb.append("todo\n\n");
+        sb.append("\nInitiated Backups:\n");
+        final Collection<RequestedBackupFile> allFilesInfo = RequestedBackupsState.getInstance().getAllFilesInfo();
 
-        sb.append("Stored Chunks:\n");
+        if (allFilesInfo.isEmpty()) {
+            sb.append("No backups were initiated by this Peer.\n");
+        } else {
+            for (RequestedBackupFile rbf : allFilesInfo) {
+                sb.append(rbf).append("\n");
+            }
+        }
+
+        sb.append("\nStored Chunks:\n");
 
         final Collection<ChunkBackupInfo> allBackedUpChunksInfo = ChunkBackupState.getInstance().getAllBackedUpChunksInfo();
 
         if (allBackedUpChunksInfo.isEmpty()) {
-            sb.append("No chunks are currently stored\n");
+            sb.append("No chunks are currently stored.\n");
         } else {
             for (ChunkBackupInfo chunkBackupInfo : allBackedUpChunksInfo) {
                 sb.append(chunkBackupInfo).append("\n");

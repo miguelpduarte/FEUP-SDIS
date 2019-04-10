@@ -1,4 +1,4 @@
-package base.storage;
+package base.storage.stored;
 
 /// Null Object Class (Design Pattern) for ChunkBackupInfo
 public class NullChunkBackupInfo extends ChunkBackupInfo {

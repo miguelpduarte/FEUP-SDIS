@@ -1,6 +1,6 @@
 package base;
 
-import base.shutdownandstartup.ShutdownAndStartupHandler;
+import base.persistentstate.ShutdownAndStartupHandler;
 import base.storage.StorageManager;
 
 import java.rmi.RemoteException;
