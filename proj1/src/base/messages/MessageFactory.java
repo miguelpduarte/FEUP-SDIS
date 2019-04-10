@@ -180,9 +180,16 @@ public class MessageFactory {
         String message_header = new String(message, 0, crlf_index);
         String[] header_fields = message_header.split(" ");
 
+        if (header_fields.length < 2) {
+            return null;
+        }
+
         ProtocolDefinitions.MessageType msg_type = ProtocolDefinitions.MessageType.valueOf(header_fields[0]);
 
         // TODO: Consider protocol version
+        if (!header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION) && !header_fields[1].equals(ProtocolDefinitions.VERSION)) {
+            return null;
+        }
 
         switch (msg_type) {
             // with chunk no and replication deg

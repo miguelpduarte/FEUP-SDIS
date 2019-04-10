@@ -30,6 +30,7 @@ The delay also seems to not be working in terms of stopping the PUTCHUNKs?
     - However, this does not consider different absolute paths (probably should hash using it instead of simply the file name)
     discuss discuss discuss
 - Don't load the whole file at once, split it directly when reading -> must change structure to start sending tasks as the file chunks are read for it to make any difference :/
+- If any chunk fails in backup, cancel everything and send DELETE
 
 ## Minor-ish TODOs:
 - adicionar ao chunkbackupstate mal se recebe o putchunk, apagar se der erro (assim apanham-se todos os STOREDs ou mais vá) -> does not seem like a priority

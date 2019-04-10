@@ -8,9 +8,11 @@ public interface IPeer extends Remote {
 
     int restore(String filename) throws RemoteException;
 
+    int restoreEnhanced(String filename) throws RemoteException;
+
     int delete(String filename) throws RemoteException;
 
-    // When called with 0 works as a Reclaim action
+    // When called with 0 empties the Peer's disk space
     int setMaxDiskSpace(int disk_space_kbs) throws RemoteException;
 
     String getServiceState() throws RemoteException;

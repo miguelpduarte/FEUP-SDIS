@@ -10,6 +10,7 @@ public class ProtocolDefinitions {
     public static final Boolean MOCK_HASHMAP_SET_VALUE = true;
 
     public static String VERSION;
+    public static final String INITIAL_VERSION = "1.0";
     public static String SERVER_ID;
 
     public enum MessageType {

@@ -21,7 +21,7 @@ case $2 in
         exit 1
     fi
     ;;
-"RESTORE" | "DELETE")
+"RESTORE" | "RESTOREENH" | "DELETE")
     if [[ $# != 3 ]]; then
         echo "Wrong no. of arguments"
         echo "Usage: <peer_id> $2 <file_path>"

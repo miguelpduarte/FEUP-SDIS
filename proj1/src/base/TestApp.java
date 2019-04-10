@@ -28,6 +28,8 @@ public class TestApp {
                 case "RESTORE":
                     peer.restore(operands[0]);
                     break;
+                case "RESTOREENH":
+                    peer.restoreEnhanced(operands[0]);
                 case "DELETE":
                     peer.delete(operands[0]);
                     break;

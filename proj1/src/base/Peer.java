@@ -15,6 +15,7 @@ import base.tasks.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.List;
@@ -93,6 +94,12 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
         return 0;
     }
+
+    @Override
+    public int restoreEnhanced(String filename) throws RemoteException {
+        return -1;
+    }
+
 
     @Override
     public int delete(String file_path) {
