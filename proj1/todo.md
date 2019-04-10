@@ -4,9 +4,9 @@ The delay also seems to not be working in terms of stopping the PUTCHUNKs?
 
 ## Important TODOs (Essential):
 
-- Store information for the files that the peer requested to be backed up (initiator peer)
-    - (peer that does backups should store information just like ChunkBackupState -> necessary for STATE)
-- Exit handler and recover on startup for the backup information
+- ~~Store information for the files that the peer requested to be backed up (initiator peer)~~
+    - ~~(peer that does backups should store information just like ChunkBackupState -> necessary for STATE)~~
+- ~~Exit handler and recover on startup for the backup information~~
 - consider protocol version and other things like that in message parsing:
     - ~~Reading body from correct CRLFs~~ - done and working
     - Not yet looking at the protocol version
