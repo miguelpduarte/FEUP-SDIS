@@ -59,7 +59,7 @@ public class ChunkBackupInfo {
     @Override
     public String toString() {
         return String.format(
-                "file_id: '%s', chunk_no: '%d',\nreplication degree: '%d', #replicators: '%d', size(bytes): '%d'\ndiff to replication degree: '%d'\n",
+                "file_id: %s, chunk_no: %d,\nreplication degree: %d, #replicators: %d, size(bytes): %d\ndiff to replication degree: %d\n",
                 this.file_id, this.chunk_no,
                 this.replication_degree, this.replicators.size(), this.size_bytes,
                 this.getDiffToDesiredReplicationDegree());

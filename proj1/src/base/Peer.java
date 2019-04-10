@@ -168,7 +168,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         }
 
         sb.append("\nPeer storage (KBytes):\n");
-        sb.append("Maximum Capacity: ").append(StorageManager.getInstance().getMaximumCapacity()).append("\tCurrent Usage: ").append(StorageManager.getInstance().getOccupiedSpaceBytes() / 1000);
+        sb.append("Maximum Capacity: ").append(StorageManager.getInstance().getMaximumCapacity()).append("\tCurrent Usage: ").append(StorageManager.getInstance().getOccupiedSpaceBytes());
 
         return sb.toString();
     }

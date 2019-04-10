@@ -29,15 +29,16 @@ public abstract class ChannelHandler implements Runnable {
     public void run() {
         while (true) {
             try {
-                channel_socket.receive(packet);
-                this.handle();
+                DatagramPacket p = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
+                channel_socket.receive(p);
+                this.handle(p);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    protected abstract void handle();
+    protected abstract void handle(DatagramPacket dp);
 
     public void broadcast(byte[] message) throws IOException {
         DatagramPacket broadcast_packet = new DatagramPacket(message, message.length, InetAddress.getByName(this.hostname), this.port);

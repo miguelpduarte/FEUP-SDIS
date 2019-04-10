@@ -12,6 +12,7 @@ import base.tasks.Task;
 import base.tasks.TaskManager;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.util.concurrent.Future;
 
 public class ControlChannelHandler extends ChannelHandler {
@@ -20,9 +21,9 @@ public class ControlChannelHandler extends ChannelHandler {
     }
 
     @Override
-    protected void handle() {
-        final byte[] packet_data = this.packet.getData();
-        final int packet_length = this.packet.getLength();
+    protected void handle(DatagramPacket dp) {
+        final byte[] packet_data = dp.getData();
+        final int packet_length = dp.getLength();
 
 
         ThreadManager.getInstance().executeLater(() -> {

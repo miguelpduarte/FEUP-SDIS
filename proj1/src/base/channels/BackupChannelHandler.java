@@ -9,6 +9,7 @@ import base.storage.ChunkBackupState;
 import base.storage.StorageManager;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
@@ -24,9 +25,9 @@ public class BackupChannelHandler extends ChannelHandler {
     }
 
     @Override
-    protected void handle() {
-        final byte[] packet_data = this.packet.getData();
-        final int packet_length = this.packet.getLength();
+    protected void handle(DatagramPacket dp) {
+        final byte[] packet_data = dp.getData();
+        final int packet_length = dp.getLength();
 
         ThreadManager.getInstance().executeLater(() -> {
             try {
