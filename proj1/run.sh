@@ -2,9 +2,18 @@
 
 cd $(dirname $0)
 
+# Runtime definitions
 FULL_PATH="$(pwd -P)"
 CLASS_PATH="/out/production/proj1"
 TEST_APP_CLASS="base.TestApp"
+
+# Ensuring project compilation (assumes that both shell scripts are in the same directory)
+echo "Building project..."
+sh "$FULL_PATH/build_testapp.sh"
+if [[ $? != 0 ]]; then
+    echo "Error building the project"
+    exit 2
+fi
 
 if [[ $# < 2 ]]; then
     echo "Not enough arguments"

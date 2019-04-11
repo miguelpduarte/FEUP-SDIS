@@ -44,6 +44,6 @@ public class ProtocolDefinitions {
     public static final int CHUNK_MAX_SIZE_BYTES = 64 * ProtocolDefinitions.KB_TO_BYTE;
     public static final int MAX_CHUNKS = 1000000;
 
-    public static final int INITIAL_STORAGE_MAX_KBS= 1000;
+    public static final int INITIAL_STORAGE_MAX_KBS = 1000000;
     public static final int KB_TO_BYTE = 1000;
 }

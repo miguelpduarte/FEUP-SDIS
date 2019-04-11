@@ -15,7 +15,7 @@ PEER_PREFIX="Peer-" # To avoid collisions with other RMI declarations
 
 # Ensuring project compilation (assumes that both shell scripts are in the same directory)
 echo "Building project..."
-sh "$FULL_PATH/build.sh"
+sh "$FULL_PATH/build_peer.sh"
 if [[ $? != 0 ]]; then
     echo "Error building the project"
     exit 2
@@ -66,7 +66,7 @@ while [[ $# > 0 ]]; do
     esac
 done
 
-echo "AAA $PEER_START_ID";
+echo "Starting with id ${PEER_START_ID+0}";
 
 # Application arguments
 PROTOCOL_VERSION="1.0"

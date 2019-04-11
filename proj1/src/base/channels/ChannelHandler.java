@@ -31,6 +31,7 @@ public abstract class ChannelHandler implements Runnable {
             try {
                 DatagramPacket p = new DatagramPacket(new byte[PACKET_SIZE], PACKET_SIZE);
                 channel_socket.receive(p);
+                System.out.println("Who is this? " + p.getAddress());
                 this.handle(p);
             } catch (IOException e) {
                 e.printStackTrace();
