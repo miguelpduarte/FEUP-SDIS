@@ -184,53 +184,60 @@ public class MessageFactory {
             return null;
         }
 
-        ProtocolDefinitions.MessageType msg_type = ProtocolDefinitions.MessageType.valueOf(header_fields[0]);
+        try {
+            ProtocolDefinitions.MessageType msg_type = ProtocolDefinitions.MessageType.valueOf(header_fields[0]);
 
-        // TODO: Consider protocol version
-        if (!header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION) && !header_fields[1].equals(ProtocolDefinitions.VERSION)) {
-            return null;
-        }
-
-        switch (msg_type) {
-            // with chunk no and replication deg
-            case PUTCHUNK:
-                return new CommonMessage(
-                        msg_type,
-                        header_fields[1],
-                        header_fields[2],
-                        header_fields[3],
-                        Integer.parseInt(header_fields[4]),
-                        Integer.parseInt(header_fields[5]),
-                        crlf_index,
-                        message,
-                        msg_length
-                );
-            // with chunk no and without replication deg
-            case STORED: case GETCHUNK: case CHUNK: case REMOVED:
-                return new CommonMessage(
-                        msg_type,
-                        header_fields[1],
-                        header_fields[2],
-                        header_fields[3],
-                        Integer.parseInt(header_fields[4]),
-                        crlf_index,
-                        message,
-                        msg_length
-                );
-            // without chunk no and without replication deg
-            case DELETE:
-                return new CommonMessage(
-                        msg_type,
-                        header_fields[1],
-                        header_fields[2],
-                        header_fields[3],
-                        crlf_index,
-                        message,
-                        msg_length
-                );
-            // unexpected message type
-            default:
+            if (!header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION) && !header_fields[1].equals(ProtocolDefinitions.VERSION)) {
                 return null;
+            }
+
+            switch (msg_type) {
+                // with chunk no and replication deg
+                case PUTCHUNK:
+                    return new CommonMessage(
+                            msg_type,
+                            header_fields[1],
+                            header_fields[2],
+                            header_fields[3],
+                            Integer.parseInt(header_fields[4]),
+                            Integer.parseInt(header_fields[5]),
+                            crlf_index,
+                            message,
+                            msg_length
+                    );
+                // with chunk no and without replication deg
+                case STORED:
+                case GETCHUNK:
+                case CHUNK:
+                case REMOVED:
+                    return new CommonMessage(
+                            msg_type,
+                            header_fields[1],
+                            header_fields[2],
+                            header_fields[3],
+                            Integer.parseInt(header_fields[4]),
+                            crlf_index,
+                            message,
+                            msg_length
+                    );
+                // without chunk no and without replication deg
+                case DELETE:
+                    return new CommonMessage(
+                            msg_type,
+                            header_fields[1],
+                            header_fields[2],
+                            header_fields[3],
+                            crlf_index,
+                            message,
+                            msg_length
+                    );
+                // unexpected message type
+                default:
+                    return null;
+            }
+
+        } catch (IllegalArgumentException ignored) {
+            return null;
         }
     }
 

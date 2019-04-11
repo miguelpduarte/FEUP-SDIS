@@ -151,7 +151,7 @@ public class StorageManager {
      *
      * @param file_name name of file that is being restored
      */
-    public boolean writeToFileEnd(String file_name, byte[] data, int chunk_no) {
+    public boolean writeChunkToFullFile(String file_name, byte[] data, int chunk_no) {
         final String file_path = String.format("%s/%s", this.restored_dirname, file_name);
 
         try (RandomAccessFile raf = new RandomAccessFile(file_path, "rw")) {
@@ -159,7 +159,7 @@ public class StorageManager {
             raf.write(data);
             return true;
         } catch (IOException e) {
-            System.out.printf("StorageManager.writeToFileEnd::Error in appending to file '%s'\n", file_name);
+            System.out.printf("StorageManager.writeChunkToFullFile::Error in appending to file '%s'\n", file_name);
             e.printStackTrace();
             return false;
         }

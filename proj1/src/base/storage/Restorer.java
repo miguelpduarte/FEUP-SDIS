@@ -34,7 +34,7 @@ public class Restorer implements Keyable {
             try {
                 RestorerData chunk_to_store = this.chunks_to_store.take();
                 System.out.println("Writing to file");
-                StorageManager.getInstance().writeToFileEnd(file_name, chunk_to_store.getData(), chunk_to_store.getChunkNo());
+                StorageManager.getInstance().writeChunkToFullFile(file_name, chunk_to_store.getData(), chunk_to_store.getChunkNo());
             } catch (InterruptedException ignored) {
             }
         }
