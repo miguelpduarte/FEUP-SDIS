@@ -5,12 +5,14 @@ import base.ThreadManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
+import base.messages.MessageWithPasvPort;
 import base.storage.requested.RequestedBackupFile;
 import base.storage.requested.RequestedBackupFileChunk;
 import base.storage.requested.RequestedBackupsState;
 import base.storage.stored.ChunkBackupInfo;
 import base.storage.stored.ChunkBackupState;
 import base.storage.StorageManager;
+import base.tasks.EnhancedPutchunkHandler;
 import base.tasks.PutchunkTask;
 import base.tasks.Task;
 import base.tasks.TaskManager;
@@ -72,10 +74,6 @@ public class ControlChannelHandler extends ChannelHandler {
         });
     }
 
-    private void handleGetchunkEnh(CommonMessage info, InetAddress address) {
-        System.out.println("Got a GETCHUNKENH from " + address);
-    }
-
     private void handleRemoved(CommonMessage info) {
         final String file_id = info.getFileId();
         final int chunk_no = ((MessageWithChunkNo) info).getChunkNo();
@@ -116,6 +114,21 @@ public class ControlChannelHandler extends ChannelHandler {
     private void handleDelete(CommonMessage info) {
         StorageManager.getInstance().removeFileChunksIfStored(info.getFileId());
         RequestedBackupsState.getInstance().unregisterRequestedFile(info.getFileId());
+    }
+
+    private void handleGetchunkEnh(CommonMessage info, InetAddress address) {
+        System.out.println("ControlChannelHandler.handleGetchunkEnh");
+        byte[] chunk_data = StorageManager.getInstance().getStoredChunk(info.getFileId(), ((MessageWithChunkNo)info).getChunkNo());
+        if (chunk_data == null) {
+            System.out.println("Dont have the chunk");
+            return;
+        }
+
+        try {
+            new EnhancedPutchunkHandler((MessageWithChunkNo) info, address, chunk_data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void handleGetchunk(CommonMessage info) {
