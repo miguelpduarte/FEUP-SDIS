@@ -16,6 +16,7 @@ import base.tasks.TaskManager;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.util.concurrent.Future;
 
 public class ControlChannelHandler extends ChannelHandler {
@@ -52,6 +53,9 @@ public class ControlChannelHandler extends ChannelHandler {
                     case GETCHUNK:
                         handleGetchunk(info);
                         break;
+                    case GETCHUNKENH:
+                        handleGetchunkEnh(info, dp.getAddress());
+                        break;
                     case DELETE:
                         handleDelete(info);
                         break;
@@ -63,6 +67,10 @@ public class ControlChannelHandler extends ChannelHandler {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void handleGetchunkEnh(CommonMessage info, InetAddress address) {
+        System.out.println("Got a GETCHUNKENH from " + address);
     }
 
     private void handleRemoved(CommonMessage info) {

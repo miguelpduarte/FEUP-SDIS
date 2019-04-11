@@ -17,6 +17,7 @@ public class ProtocolDefinitions {
         PUTCHUNK,
         STORED,
         GETCHUNK,
+        GETCHUNKENH,
         CHUNK,
         DELETE,
         REMOVED

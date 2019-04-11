@@ -13,6 +13,8 @@ public class TestApp {
             System.exit(1);
         }
 
+        // TODO: Add argument validation and print usage, etc etc
+
         String rmi_peer_ap = args[0];
         String sub_protocol = args[1];
         String[] operands = Arrays.copyOfRange(args, 2, args.length);
