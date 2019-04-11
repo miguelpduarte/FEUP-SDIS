@@ -4,6 +4,7 @@ import base.ProtocolDefinitions;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.ThreadManager;
+import base.messages.MessageWithChunkNo;
 import base.tasks.Task;
 import base.tasks.TaskManager;
 
@@ -66,7 +67,7 @@ public class RestoreChannelHandler extends ChannelHandler {
     }
 
     private void stopRepeatedChunkSending(CommonMessage info) {
-        final String chunk_hash = ProtocolDefinitions.calcChunkHash(info.getFileId(), info.getChunkNo());
+        final String chunk_hash = ProtocolDefinitions.calcChunkHash(info.getFileId(), ((MessageWithChunkNo)info).getChunkNo());
         Future f = this.chunkMessagesToSend.get(chunk_hash);
         if (f == null) {
             return;

@@ -169,8 +169,23 @@ public class MessageFactory {
         return sb.toString().getBytes();
     }
 
+    public static byte[] createPasvChunkMessage(String file_id, int chunk_no, int pasv_port) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("PASVCHUNK").append(" ");
+        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
+        sb.append(file_id).append(" ");
+        sb.append(chunk_no).append(" ");
+        sb.append(ProtocolDefinitions.CRLF);
+        sb.append(pasv_port).append(" ");
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
+
+        return sb.toString().getBytes();
+    }
+
     public static CommonMessage getBasicInfo(byte[] message, int msg_length) {
-        int crlf_index = getCRLFIndex(message);
+        int crlf_index = getCRLFIndex(message, message.length);
         if (crlf_index == -1) {
             return null;
         }
@@ -194,7 +209,7 @@ public class MessageFactory {
             switch (msg_type) {
                 // with chunk no and replication deg
                 case PUTCHUNK:
-                    return new CommonMessage(
+                    return new MessageWithReplicationDegree(
                             msg_type,
                             header_fields[1],
                             header_fields[2],
@@ -210,7 +225,7 @@ public class MessageFactory {
                 case GETCHUNK:
                 case CHUNK:
                 case REMOVED:
-                    return new CommonMessage(
+                    return new MessageWithChunkNo(
                             msg_type,
                             header_fields[1],
                             header_fields[2],
@@ -232,22 +247,40 @@ public class MessageFactory {
                             msg_length
                     );
                 // unexpected message type
+                case PASVCHUNK:
+                    return new MessageWithPasvPort(
+                            msg_type,
+                            header_fields[1],
+                            header_fields[2],
+                            header_fields[3],
+                            Integer.parseInt(header_fields[4]),
+                            crlf_index,
+                            message,
+                            msg_length
+                    );
                 default:
                     return null;
             }
 
         } catch (IllegalArgumentException ignored) {
             return null;
+        } catch (InvalidMessageFormatException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
-    private static int getCRLFIndex(byte[] array) {
-        for (int i = 0; i < array.length - 1; ++i) {
+    public static int getCRLFIndex(byte[] array, int array_len, int start_idx) {
+        for (int i = start_idx; i < array_len - 1; ++i) {
             if (array[i] == ProtocolDefinitions.CR && array[i + 1] == ProtocolDefinitions.LF) {
                 return i;
             }
         }
 
         return -1;
+    }
+
+    public static int getCRLFIndex(byte[] array, int array_len) {
+        return getCRLFIndex(array, array_len, 0);
     }
 }

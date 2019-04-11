@@ -11,16 +11,17 @@ public class ProtocolDefinitions {
 
     public static String VERSION;
     public static final String INITIAL_VERSION = "1.0";
+    public static final String IMPROVED_VERSION = "2.1";
     public static String SERVER_ID;
 
     public enum MessageType {
         PUTCHUNK,
         STORED,
         GETCHUNK,
-        GETCHUNKENH,
         CHUNK,
         DELETE,
-        REMOVED
+        REMOVED,
+        PASVCHUNK
     }
 
     public static final int[] MESSAGE_DELAYS = {1, 2, 4, 8};

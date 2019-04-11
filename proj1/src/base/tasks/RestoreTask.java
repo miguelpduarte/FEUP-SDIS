@@ -6,6 +6,7 @@ import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.InvalidMessageFormatException;
 import base.messages.MessageFactory;
+import base.messages.MessageWithChunkNo;
 import base.storage.RestoreManager;
 import base.storage.Restorer;
 
@@ -33,7 +34,7 @@ public class RestoreTask extends Task {
             return;
         }
 
-        if (msg.getChunkNo() != this.chunk_no || !msg.getFileId().equals(this.file_id)) {
+        if (((MessageWithChunkNo) msg).getChunkNo() != this.chunk_no || !msg.getFileId().equals(this.file_id)) {
             System.out.println("DBG:RestoreTask.notify::Message target was not this specific task");
             return;
         }

@@ -5,6 +5,7 @@ import base.channels.ChannelHandler;
 import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
+import base.messages.MessageWithChunkNo;
 
 import java.util.HashSet;
 
@@ -41,7 +42,7 @@ public class PutchunkTask extends Task {
             return;
         }
 
-        if (msg.getChunkNo() != this.chunk_no || !msg.getFileId().equals(this.file_id)) {
+        if (((MessageWithChunkNo) msg).getChunkNo() != this.chunk_no || !msg.getFileId().equals(this.file_id)) {
             System.out.println("DBG:PutchunkTask.notify::Message target was not this specific task");
             return;
         }

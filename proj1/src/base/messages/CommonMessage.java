@@ -10,20 +10,16 @@ public class CommonMessage implements Keyable {
     private final String version;
     private final String sender_id;
     private final String file_id;
-    private final int chunk_no;
-    private final int replication_degree;
-    private final int crlf_index;
-    private final byte[] message;
-    private final int msg_length;
+    protected final int crlf_index;
+    protected final byte[] message;
+    protected final int msg_length;
     private final int last_crlf_index;
 
-    public CommonMessage(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int chunk_no, int replication_degree, int crlf_index, byte[] message, int msg_length) {
+    public CommonMessage(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int crlf_index, byte[] message, int msg_length) {
         this.message_type = message_type;
         this.version = version;
         this.sender_id = sender_id;
         this.file_id = file_id;
-        this.chunk_no = chunk_no;
-        this.replication_degree = replication_degree;
         this.crlf_index = crlf_index;
         this.message = message;
         this.msg_length = msg_length;
@@ -49,14 +45,6 @@ public class CommonMessage implements Keyable {
         return -1;
     }
 
-    public CommonMessage(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int crlf_index, byte[] message, int msg_length) {
-        this(message_type, version, sender_id, file_id, -1, -1, crlf_index, message, msg_length);
-    }
-
-    public CommonMessage(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int chunk_no, int crlf_index, byte[] message, int msg_length) {
-        this(message_type, version, sender_id, file_id, chunk_no, -1, crlf_index, message, msg_length);
-    }
-
     public ProtocolDefinitions.MessageType getMessageType() {
         return message_type;
     }
@@ -73,10 +61,6 @@ public class CommonMessage implements Keyable {
         return file_id;
     }
 
-    public int getChunkNo() {
-        return chunk_no;
-    }
-
     public int getCrlfIndex() {
         return crlf_index;
     }
@@ -86,7 +70,7 @@ public class CommonMessage implements Keyable {
     }
 
     public String toKey() {
-        return message_type.name() + file_id + chunk_no;
+        return message_type.name() + file_id;
     }
 
     /**
@@ -96,13 +80,10 @@ public class CommonMessage implements Keyable {
      */
     public byte[] getBody() throws InvalidMessageFormatException {
         if (this.last_crlf_index == -1 || this.last_crlf_index == this.crlf_index) {
-            throw new InvalidMessageFormatException();
+            throw new InvalidMessageFormatException("Missing Body");
         }
 
         return Arrays.copyOfRange(this.message, this.last_crlf_index + 2, this.msg_length);
     }
 
-    public int getReplicationDegree() {
-        return replication_degree;
-    }
 }
