@@ -1,5 +1,6 @@
 package base;
 
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ProtocolDefinitions {
@@ -25,6 +26,10 @@ public class ProtocolDefinitions {
     }
 
     public static final int[] MESSAGE_DELAYS = {1, 2, 4, 8};
+
+    public static int getAccumulatedMessageDelays() {
+        return Arrays.stream(MESSAGE_DELAYS).sum();
+    }
 
     private static final int MIN_RANDOM_MESSAGE_DELAY_MILIS = 0;
     private static final int MAX_RANDOM_MESSAGE_DELAY_MILIS = 400;

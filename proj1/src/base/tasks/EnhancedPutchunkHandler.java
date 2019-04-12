@@ -1,5 +1,6 @@
 package base.tasks;
 
+import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.channels.ChannelManager;
 import base.messages.CommonMessage;
@@ -27,9 +28,10 @@ public class EnhancedPutchunkHandler {
         this.address = address;
         this.chunk_data = chunk_data;
         this.server_socket = new ServerSocket(0);
-        // 15 seconds is the accumulated exponential backoff time for retries in other subprotocols
-        this.server_socket.setSoTimeout(15000);
+        // The timeout value is the accumulated exponential backoff time for retries in other subprotocols
+        this.server_socket.setSoTimeout(ProtocolDefinitions.getAccumulatedMessageDelays());
         this.port = this.server_socket.getLocalPort();
+        // TODO Wrong order here?
         startServer();
         advertiseService();
     }
@@ -50,7 +52,7 @@ public class EnhancedPutchunkHandler {
         try {
             final Socket connection = this.server_socket.accept();
             System.out.println("A connection was accepted!");
-            // Using ObjectÓutputStream because this ensures that the byte[] is written as an object (aka all at once)
+            // Using ObjectOutputStream because this ensures that the byte[] is written as an object (aka all at once)
             ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
             oos.writeObject(this.chunk_data);
             System.out.println("Sending succesful! Now sending a STORED message");
