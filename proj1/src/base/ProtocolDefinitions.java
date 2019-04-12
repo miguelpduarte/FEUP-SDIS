@@ -27,8 +27,8 @@ public class ProtocolDefinitions {
 
     public static final int[] MESSAGE_DELAYS = {1, 2, 4, 8};
 
-    public static int getAccumulatedMessageDelays() {
-        return Arrays.stream(MESSAGE_DELAYS).sum();
+    public static int getMaxMessageDelay() {
+        return Arrays.stream(MESSAGE_DELAYS).max().getAsInt();
     }
 
     private static final int MIN_RANDOM_MESSAGE_DELAY_MILIS = 0;

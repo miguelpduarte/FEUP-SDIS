@@ -3,7 +3,6 @@ package base.tasks;
 import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.channels.ChannelManager;
-import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
 
@@ -28,12 +27,11 @@ public class EnhancedPutchunkHandler {
         this.address = address;
         this.chunk_data = chunk_data;
         this.server_socket = new ServerSocket(0);
-        // The timeout value is the accumulated exponential backoff time for retries in other subprotocols
-        this.server_socket.setSoTimeout(ProtocolDefinitions.getAccumulatedMessageDelays());
+        // The timeout value is the maximum exponential backoff time delay used for retries in other subprotocols
+        this.server_socket.setSoTimeout(ProtocolDefinitions.getMaxMessageDelay());
         this.port = this.server_socket.getLocalPort();
-        // TODO Wrong order here?
-        startServer();
         advertiseService();
+        startServer();
     }
 
     private void advertiseService() {
