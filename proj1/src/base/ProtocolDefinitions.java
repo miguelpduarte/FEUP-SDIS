@@ -9,6 +9,7 @@ public class ProtocolDefinitions {
     public final static byte LF = 0xA;
     public static final String STORED_CHUNKS_BACKUP_INFORMATION_FILENAME = "saved_state.sdis";
     public static final Boolean MOCK_HASHMAP_SET_VALUE = true;
+    public static final int BACKUP_INTERVAL_SECONDS = 30;
 
     public static String VERSION;
     public static final String INITIAL_VERSION = "1.0";
@@ -22,7 +23,8 @@ public class ProtocolDefinitions {
         CHUNK,
         DELETE,
         REMOVED,
-        PASVCHUNK
+        PASVCHUNK,
+        CANSTORE
     }
 
     public static final int[] MESSAGE_DELAYS = {1, 2, 4, 8};

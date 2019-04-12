@@ -58,5 +58,6 @@ public class PeerMain {
         ShutdownAndStartupHandler.restoreOnStartup();
 
         ShutdownAndStartupHandler.installShutdownHook();
+        ShutdownAndStartupHandler.startPeriodicBackupService();
     }
 }

@@ -10,10 +10,10 @@ import base.messages.MessageWithChunkNo;
 import java.util.HashSet;
 
 public class PutchunkTask extends Task {
-    private final int replication_deg;
-    private final HashSet<String> replicators = new HashSet<>();
-    private final byte[] body;
-    private final int chunk_no;
+    protected final int replication_deg;
+    protected final HashSet<String> replicators = new HashSet<>();
+    protected final byte[] body;
+    protected final int chunk_no;
 
     public PutchunkTask(String file_id, int chunk_no, int replication_deg, byte[] body) {
         super(file_id);

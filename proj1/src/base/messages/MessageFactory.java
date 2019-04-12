@@ -208,6 +208,21 @@ public class MessageFactory {
         return sb.toString().getBytes();
     }
 
+    public static byte[] createCanStoreMessage(String file_id, int chunk_no, int pasv_port) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("CANSTORE").append(" ");
+        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
+        sb.append(file_id).append(" ");
+        sb.append(chunk_no).append(" ");
+        sb.append(ProtocolDefinitions.CRLF);
+        sb.append(pasv_port).append(" ");
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
+
+        return sb.toString().getBytes();
+    }
+
     public static CommonMessage getBasicInfo(byte[] message, int msg_length) {
         int crlf_index = getCRLFIndex(message, message.length);
         if (crlf_index == -1) {
@@ -226,7 +241,7 @@ public class MessageFactory {
         try {
             ProtocolDefinitions.MessageType msg_type = ProtocolDefinitions.MessageType.valueOf(header_fields[0]);
 
-            if (!header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION) && !header_fields[1].equals(ProtocolDefinitions.VERSION)) {
+            if (!(header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION) || header_fields[1].equals(ProtocolDefinitions.VERSION))) {
                 return null;
             }
 
@@ -271,7 +286,7 @@ public class MessageFactory {
                             crlf_index
                     );
                 // unexpected message type
-                case PASVCHUNK:
+                case PASVCHUNK: case CANSTORE:
                     return new MessageWithPasvPort(
                             msg_type,
                             header_fields[1],

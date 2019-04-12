@@ -1,5 +1,7 @@
 package base.persistentstate;
 
+import base.ProtocolDefinitions;
+import base.ThreadManager;
 import base.storage.stored.ChunkBackupState;
 import base.storage.requested.RequestedBackupsState;
 import base.storage.StorageManager;
@@ -23,7 +25,33 @@ public class ShutdownAndStartupHandler {
         }
     }
 
-    private static void backupOnShutdown() throws IOException {
+    public static void installShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                ShutdownAndStartupHandler.backup();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
+    }
+
+    public static void startPeriodicBackupService() {
+        periodicBackupService();
+    }
+
+    private static void periodicBackupService() {
+        ThreadManager.getInstance().executeLater(() -> {
+            try {
+                System.out.println("Executing periodic backup");
+                backup();
+                periodicBackupService();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }, ProtocolDefinitions.BACKUP_INTERVAL_SECONDS);
+    }
+
+    private static void backup() throws IOException {
         try (
                 FileOutputStream fos = new FileOutputStream(StorageManager.getInstance().getChunkBackupInformationPath());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)
@@ -32,15 +60,5 @@ public class ShutdownAndStartupHandler {
                     ChunkBackupState.getInstance(), StorageManager.getInstance().getOccupiedSpaceBytes(), RequestedBackupsState.getInstance()
             ));
         }
-    }
-
-    public static void installShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                ShutdownAndStartupHandler.backupOnShutdown();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }));
     }
 }
