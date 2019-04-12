@@ -14,6 +14,7 @@ public abstract class Task implements Keyable {
     protected final String file_id;
     protected int current_attempt;
     private ScheduledFuture next_action;
+    private boolean is_communicating = false;
 
     public Task(String file_id) {
         this.file_id = file_id;
@@ -26,7 +27,11 @@ public abstract class Task implements Keyable {
 
     public abstract void notify(CommonMessage msg);
 
-    protected final void startCommuncation() {
+    protected synchronized final void startCommuncation() {
+        if (is_communicating) {
+            return;
+        }
+        is_communicating = true;
         // Kickstarting the channels "loop"
         ThreadManager.getInstance().executeLater(this::communicate);
     }
@@ -58,7 +63,11 @@ public abstract class Task implements Keyable {
 
     protected abstract ChannelHandler getChannel();
 
-    protected final void cancelCommunication() {
+    protected synchronized final void cancelCommunication() {
+        if (!is_communicating) {
+            System.out.println("Cancelling non-running communication");
+        }
+        is_communicating = false;
         this.next_action.cancel(true);
     }
 

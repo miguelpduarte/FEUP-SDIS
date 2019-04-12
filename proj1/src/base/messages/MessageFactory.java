@@ -75,15 +75,25 @@ public class MessageFactory {
         sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
         sb.append(replication_degree).append(" ");
+
+        if (!is_basic) {
+            sb.append(ProtocolDefinitions.CRLF);
+            sb.append(body.length).append(" ");
+        }
+
         sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
 
         byte[] header = sb.toString().getBytes();
 
-        byte[] output = new byte[header.length + body.length];
-        System.arraycopy(header, 0, output, 0, header.length);
-        System.arraycopy(body, 0, output, header.length, body.length);
-
-        return output;
+        if (is_basic) {
+            byte[] output = new byte[header.length + body.length];
+            System.arraycopy(header, 0, output, 0, header.length);
+            System.arraycopy(body, 0, output, header.length, body.length);
+            return output;
+        } else {
+            // Enhanced version, does not send message body
+            return header;
+        }
     }
 
     public static String filenameEncode(String file_name) {
@@ -241,24 +251,38 @@ public class MessageFactory {
         try {
             ProtocolDefinitions.MessageType msg_type = ProtocolDefinitions.MessageType.valueOf(header_fields[0]);
 
-            if (!(header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION) || header_fields[1].equals(ProtocolDefinitions.VERSION))) {
+            if (!header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION) && !header_fields[1].equals(ProtocolDefinitions.VERSION)) {
                 return null;
             }
 
             switch (msg_type) {
                 // with chunk no and replication deg
                 case PUTCHUNK:
-                    return new MessageWithReplicationDegree(
-                            msg_type,
-                            header_fields[1],
-                            header_fields[2],
-                            header_fields[3],
-                            Integer.parseInt(header_fields[4]),
-                            Integer.parseInt(header_fields[5]),
-                            message,
-                            msg_length,
-                            crlf_index
-                    );
+                    if (header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION)) {
+                        return new MessageWithReplicationDegree(
+                                msg_type,
+                                header_fields[1],
+                                header_fields[2],
+                                header_fields[3],
+                                Integer.parseInt(header_fields[4]),
+                                Integer.parseInt(header_fields[5]),
+                                message,
+                                msg_length,
+                                crlf_index
+                        );
+                    } else {
+                        return new MessageWithChunkSize(
+                                msg_type,
+                                header_fields[1],
+                                header_fields[2],
+                                header_fields[3],
+                                Integer.parseInt(header_fields[4]),
+                                Integer.parseInt(header_fields[5]),
+                                message,
+                                msg_length,
+                                crlf_index
+                        );
+                    }
                 // with chunk no and without replication deg
                 case STORED:
                 case GETCHUNK:
@@ -286,7 +310,8 @@ public class MessageFactory {
                             crlf_index
                     );
                 // unexpected message type
-                case PASVCHUNK: case CANSTORE:
+                case PASVCHUNK:
+                case CANSTORE:
                     return new MessageWithPasvPort(
                             msg_type,
                             header_fields[1],

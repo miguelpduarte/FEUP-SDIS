@@ -36,7 +36,7 @@ public class StorageManager {
         return this.occupied_space_bytes;
     }
 
-    private synchronized boolean canStore(int data_length) {
+    public synchronized boolean canStore(int data_length) {
         return this.occupied_space_bytes + data_length <= this.max_space_kbytes * ProtocolDefinitions.KB_TO_BYTE;
     }
 
@@ -98,7 +98,6 @@ public class StorageManager {
 
             // However, the number of bytes used is relevant so it is changed here
             this.updateOccupiedSpace(data.length);
-            // System.out.println("DBG: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes"); // TODO REMOVE
             return true;
         } catch (IOException e) {
             System.out.printf("StorageManager.storeChunk::Error in storing chunk with file_id '%s' and chunk_no '%d'\n", file_id, chunk_no);

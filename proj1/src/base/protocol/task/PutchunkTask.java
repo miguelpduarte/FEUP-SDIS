@@ -54,7 +54,7 @@ public class PutchunkTask extends Task {
                 // System.out.println("DBG: Replication minimum reached! Stopping future messages and unregistering task!");
                 System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of at least '%d'\n", this.chunk_no, this.file_id, this.replication_deg);
                 cancelCommunication();
-                TaskManager.getInstance().unregisterTask(this);
+                this.unregister();
             }
         }
     }

@@ -10,7 +10,7 @@ public class TestApp {
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("usage: <rmi_peer_ap> <sub_protocol>\n" +
-                    "Supported protocols: BACKUP, RESTORE, RESTOREENH, DELETE, RECLAIM, STATE");
+                    "Supported protocols: BACKUP, BACKUPENH, RESTORE, RESTOREENH, DELETE, RECLAIM, STATE");
             System.exit(1);
         }
 
@@ -30,6 +30,14 @@ public class TestApp {
                         System.exit(1);
                     }
                     peer.backup(operands[0], Integer.parseInt(operands[1]));
+                    break;
+                case "BACKUPENH":
+                    if (args.length != 4) {
+                        System.err.println("Wrong no. of arguments");
+                        System.err.println("Usage: <peer_id> BACKUPENH <file_path> <replication_degree>");
+                        System.exit(1);
+                    }
+                    peer.backupEnhanced(operands[0], Integer.parseInt(operands[1]));
                     break;
                 case "RESTORE":
                     if (args.length != 3) {
@@ -73,7 +81,7 @@ public class TestApp {
                     break;
                 default:
                     System.err.println("Invalid subprotocol\n" +
-                            "Supported protocols: BACKUP, RESTORE, RESTOREENH, DELETE, RECLAIM, STATE");
+                            "Supported protocols: BACKUP, BACKUPENH, RESTORE, RESTOREENH, DELETE, RECLAIM, STATE");
                     System.exit(2);
             }
         } catch (RemoteException e) {

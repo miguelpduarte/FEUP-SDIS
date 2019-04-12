@@ -23,10 +23,10 @@ if [[ $# < 2 ]]; then
 fi
 
 case $2 in
-"BACKUP")
+"BACKUP" | "BACKUPENH")
     if [[ $# != 4 ]]; then
         echo "Wrong no. of arguments"
-        echo "Usage: <peer_id> BACKUP <file_path> <replication_degree>"
+        echo "Usage: <peer_id> $2 <file_path> <replication_degree>"
         exit 1
     fi
     ;;

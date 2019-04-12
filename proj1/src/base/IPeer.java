@@ -6,6 +6,8 @@ import java.rmi.RemoteException;
 public interface IPeer extends Remote {
     int backup(String filename, int replication_factor) throws RemoteException;
 
+    int backupEnhanced(String filename, int replication_factor) throws RemoteException;
+
     int restore(String filename) throws RemoteException;
 
     int restoreEnhanced(String filename) throws RemoteException;

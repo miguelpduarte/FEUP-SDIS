@@ -6,7 +6,7 @@ import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
 import base.messages.MessageFactory;
 import base.protocol.task.*;
-import base.storage.*;
+import base.storage.StorageManager;
 import base.storage.requested.NullRequestedBackupFile;
 import base.storage.requested.RequestedBackupFile;
 import base.storage.requested.RequestedBackupFileChunk;
@@ -84,6 +84,40 @@ public class Peer extends UnicastRemoteObject implements IPeer {
     }
 
     @Override
+    public int backupEnhanced(String file_path, int replication_factor) {
+        if (!ProtocolDefinitions.VERSION.equals(ProtocolDefinitions.IMPROVED_VERSION)) {
+            System.out.println("Enhancement called while not running the correct version of the protocol");
+            return -1;
+        }
+
+        System.out.println("Peer.backupEnhanced");
+        System.out.println("file_path = [" + file_path + "], replication_factor = [" + replication_factor + "]");
+
+        final String file_name = new File(file_path).getName();
+        final String file_id = MessageFactory.filenameEncode(file_name);
+
+        RequestedBackupsState.getInstance().registerRequestedFile(new RequestedBackupFile(file_id, file_name, replication_factor));
+
+        try {
+            byte[] file_data = StorageManager.readFromFile(file_path);
+            byte[][] split_file_data = MessageFactory.splitFileContents(file_data);
+
+            for (int i = 0; i < split_file_data.length; ++i) {
+                TaskManager.getInstance().registerTask(new EnhancedPutchunkTask(file_id, i, replication_factor, split_file_data[i]));
+                RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).registerChunk(new RequestedBackupFileChunk(file_id, i, replication_factor));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        } catch (FileTooLargeException e) {
+            System.err.println("File is too large for storage in this distributed backup system!");
+            return -2;
+        }
+
+        return 0;
+    }
+
+    @Override
     public int restore(String file_path) {
         System.out.println("Peer.restore");
         System.out.println("file_path = [" + file_path + "]");
@@ -108,7 +142,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             return -1;
         }
 
-        System.out.println("Peer.restore");
+        System.out.println("Peer.restoreEnhanced");
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();

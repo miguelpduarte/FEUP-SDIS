@@ -18,7 +18,7 @@ public class EnhancedRestoreTask extends RestoreTask {
 
     public synchronized void notify(MessageWithPasvPort msg, InetAddress address) {
         if (msg.getMessageType() != ProtocolDefinitions.MessageType.PASVCHUNK) {
-            System.out.println("DBG:EnhancedRestoreTask.notify::Message was not of type CHUNK!");
+            System.out.println("DBG:EnhancedRestoreTask.notify::Message was not of type PASVCHUNK!");
             return;
         }
 

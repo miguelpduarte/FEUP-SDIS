@@ -3,6 +3,7 @@ package base.channels;
 import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.messages.*;
+import base.protocol.EnhancedPutchunkHandler;
 import base.storage.stored.ChunkBackupState;
 import base.storage.StorageManager;
 
@@ -44,6 +45,12 @@ public class BackupChannelHandler extends ChannelHandler {
 
                 switch (info.getMessageType()) {
                     case PUTCHUNK:
+                        if (info.getVersion().equals(ProtocolDefinitions.INITIAL_VERSION)) {
+                            handlePutchunk(info);
+                        } else if (info.getVersion().equals(ProtocolDefinitions.IMPROVED_VERSION) && info.getVersion().equals(ProtocolDefinitions.VERSION)) {
+                            // Current version and message version MUST BE the Improved Version
+                            handlePutchunkEnh((MessageWithChunkSize) info);
+                        }
                         handlePutchunk(info);
                         break;
                 }
@@ -53,12 +60,27 @@ public class BackupChannelHandler extends ChannelHandler {
         });
     }
 
+    private void handlePutchunkEnh(MessageWithChunkSize info) {
+        if (!StorageManager.getInstance().canStore(info.getChunkSize())) {
+            System.out.println("Could not store the chunk");
+            return;
+        }
+
+        try {
+            new EnhancedPutchunkHandler(info);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void handlePutchunk(CommonMessage info) {
         stopRepeatedPutchunkSending(info);
         storeChunk(info);
     }
 
     private void storeChunk(CommonMessage info) {
+        // TODO Verify if the backup was previously requested by this Peer (cannot store in that case)
+
         try {
             final byte[] body = info.getBody();
             final String file_id = info.getFileId();
