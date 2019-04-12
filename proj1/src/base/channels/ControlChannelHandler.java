@@ -18,8 +18,10 @@ import base.tasks.Task;
 import base.tasks.TaskManager;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.concurrent.Future;
 
 public class ControlChannelHandler extends ChannelHandler {
@@ -50,6 +52,8 @@ public class ControlChannelHandler extends ChannelHandler {
                 System.out.printf("\t\tMDC: Received message of type %s\n", info.getMessageType().name());
 
                 switch (info.getMessageType()) {
+                    case PUTCHUNK:
+                        break;
                     case STORED:
                         handleStored(info);
                         break;
@@ -58,8 +62,10 @@ public class ControlChannelHandler extends ChannelHandler {
                             handleGetchunk(info);
                         } else if (info.getVersion().equals(ProtocolDefinitions.IMPROVED_VERSION) && info.getVersion().equals(ProtocolDefinitions.VERSION)) {
                             // Current version and message version MUST BE the Improved Version
-                            handleGetchunkEnh(info, dp.getAddress());
+                            handleGetchunkEnh(info);
                         }
+                        break;
+                    case CHUNK:
                         break;
                     case DELETE:
                         handleDelete(info);
@@ -67,11 +73,29 @@ public class ControlChannelHandler extends ChannelHandler {
                     case REMOVED:
                         handleRemoved(info);
                         break;
+                    case PASVCHUNK:
+                        handlePasvChunk((MessageWithPasvPort) info, dp.getAddress());
+                        break;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void handlePasvChunk(MessageWithPasvPort info, InetAddress address) {
+        try {
+            Socket s = new Socket(address, info.getPasvPort());
+            ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
+            byte[] chunk_data = (byte[]) ois.readObject();
+            // TODO
+        } catch (IOException e) {
+            System.out.println("ControlChannelHandler.handlePasvChunk :c");
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void handleRemoved(CommonMessage info) {
@@ -116,7 +140,7 @@ public class ControlChannelHandler extends ChannelHandler {
         RequestedBackupsState.getInstance().unregisterRequestedFile(info.getFileId());
     }
 
-    private void handleGetchunkEnh(CommonMessage info, InetAddress address) {
+    private void handleGetchunkEnh(CommonMessage info) {
         System.out.println("ControlChannelHandler.handleGetchunkEnh");
         byte[] chunk_data = StorageManager.getInstance().getStoredChunk(info.getFileId(), ((MessageWithChunkNo)info).getChunkNo());
         if (chunk_data == null) {
@@ -125,7 +149,7 @@ public class ControlChannelHandler extends ChannelHandler {
         }
 
         try {
-            new EnhancedPutchunkHandler((MessageWithChunkNo) info, address, chunk_data);
+            new EnhancedPutchunkHandler((MessageWithChunkNo) info, chunk_data);
         } catch (IOException e) {
             e.printStackTrace();
         }
