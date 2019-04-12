@@ -45,11 +45,15 @@ public class MessageFactory {
         return split_file_contents;
     }
 
-    public static byte[] createGetchunkTask(String file_id, int chunk_no) {
+    public static byte[] createGetchunkMessage(String file_id, int chunk_no) {
+        return createGetchunkMessage(file_id, chunk_no, true);
+    }
+
+    public static byte[] createGetchunkMessage(String file_id, int chunk_no, boolean is_basic) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("GETCHUNK").append(" ");
-        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(is_basic ? ProtocolDefinitions.INITIAL_VERSION : ProtocolDefinitions.VERSION).append(" ");
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
         sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
@@ -59,10 +63,14 @@ public class MessageFactory {
     }
 
     public static byte[] createPutchunkMessage(String file_id, int chunk_no, int replication_degree, byte[] body) {
+        return createPutchunkMessage(file_id, chunk_no, replication_degree, body, true);
+    }
+
+    public static byte[] createPutchunkMessage(String file_id, int chunk_no, int replication_degree, byte[] body, boolean is_basic) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("PUTCHUNK").append(" ");
-        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(is_basic ? ProtocolDefinitions.INITIAL_VERSION : ProtocolDefinitions.VERSION).append(" ");
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
         sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
@@ -107,13 +115,17 @@ public class MessageFactory {
     }
 
     public static byte[] createStoredMessage(String file_id, int chunk_no) {
+        return createStoredMessage(file_id, chunk_no, true);
+    }
+
+    public static byte[] createStoredMessage(String file_id, int chunk_no, boolean is_basic) {
         // NOTE: The argument is file_id and not file_name, thus it is considered pre-processed (via filenameEncode)
         // This consideration is due to the fact that this message is always created as a reply so the original filename does not even exist
 
         StringBuilder sb = new StringBuilder();
 
         sb.append("STORED").append(" ");
-        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(is_basic ? ProtocolDefinitions.INITIAL_VERSION : ProtocolDefinitions.VERSION).append(" ");
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
         sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
@@ -123,10 +135,14 @@ public class MessageFactory {
     }
 
     public static byte[] createChunkMessage(String file_id, int chunk_no, byte[] body) {
+        return createChunkMessage(file_id, chunk_no, body, true);
+    }
+
+    public static byte[] createChunkMessage(String file_id, int chunk_no, byte[] body, boolean is_basic) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("CHUNK").append(" ");
-        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(is_basic ? ProtocolDefinitions.INITIAL_VERSION : ProtocolDefinitions.VERSION).append(" ");
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
         sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
@@ -142,10 +158,14 @@ public class MessageFactory {
     }
 
     public static byte[] createDeleteMessage(String file_id) {
+        return createDeleteMessage(file_id, true);
+    }
+
+    public static byte[] createDeleteMessage(String file_id, boolean is_basic) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("DELETE").append(" ");
-        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(is_basic ? ProtocolDefinitions.INITIAL_VERSION : ProtocolDefinitions.VERSION).append(" ");
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
         sb.append(file_id).append(" ");
         sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
@@ -154,13 +174,17 @@ public class MessageFactory {
     }
 
     public static byte[] createRemovedMessage(String file_id, int chunk_no) {
+        return createRemovedMessage(file_id, chunk_no, true);
+    }
+
+    public static byte[] createRemovedMessage(String file_id, int chunk_no, boolean is_basic) {
         // NOTE: The argument is file_id and not file_name, thus it is considered pre-processed (via filenameEncode)
         // This consideration is due to the fact that this message is always created as a reply so the original filename does not even exist
 
         StringBuilder sb = new StringBuilder();
 
         sb.append("REMOVED").append(" ");
-        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(is_basic ? ProtocolDefinitions.INITIAL_VERSION : ProtocolDefinitions.VERSION).append(" ");
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
         sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
@@ -216,9 +240,9 @@ public class MessageFactory {
                             header_fields[3],
                             Integer.parseInt(header_fields[4]),
                             Integer.parseInt(header_fields[5]),
-                            crlf_index,
                             message,
-                            msg_length
+                            msg_length,
+                            crlf_index
                     );
                 // with chunk no and without replication deg
                 case STORED:
@@ -231,9 +255,9 @@ public class MessageFactory {
                             header_fields[2],
                             header_fields[3],
                             Integer.parseInt(header_fields[4]),
-                            crlf_index,
                             message,
-                            msg_length
+                            msg_length,
+                            crlf_index
                     );
                 // without chunk no and without replication deg
                 case DELETE:
@@ -242,9 +266,9 @@ public class MessageFactory {
                             header_fields[1],
                             header_fields[2],
                             header_fields[3],
-                            crlf_index,
                             message,
-                            msg_length
+                            msg_length,
+                            crlf_index
                     );
                 // unexpected message type
                 case PASVCHUNK:
@@ -254,9 +278,9 @@ public class MessageFactory {
                             header_fields[2],
                             header_fields[3],
                             Integer.parseInt(header_fields[4]),
-                            crlf_index,
                             message,
-                            msg_length
+                            msg_length,
+                            crlf_index
                     );
                 default:
                     return null;

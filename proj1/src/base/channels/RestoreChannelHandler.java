@@ -5,8 +5,8 @@ import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.ThreadManager;
 import base.messages.MessageWithChunkNo;
-import base.tasks.Task;
-import base.tasks.TaskManager;
+import base.protocol.task.Task;
+import base.protocol.task.TaskManager;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

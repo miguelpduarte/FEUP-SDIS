@@ -21,6 +21,9 @@ if [[ $? != 0 ]]; then
     exit 2
 fi
 
+BASIC_PROTOCOL_VERSION="1.0"
+ENHANCED_PROTOCOL_VERSION="2.1"
+
 while [[ $# > 0 ]]; do
     case $1 in
     "--tile" | "-t")
@@ -51,6 +54,11 @@ while [[ $# > 0 ]]; do
         fi
         shift
 	;;
+	"-b" | "--basic")
+	    echo "Starting in the basic protocol version (1.0)"
+	    PROTOCOL_VERSION=$BASIC_PROTOCOL_VERSION
+	    shift
+	    ;;
     *)
         if ! [[ $1 =~ $NUMBER_REGEX ]]; then
             echo "Error: The number of peers must be a positive integer!"
@@ -69,7 +77,10 @@ done
 echo "Starting with id ${PEER_START_ID+0}";
 
 # Application arguments
-PROTOCOL_VERSION="1.0"
+# The default protocol version is enhanced
+if [[ -z ${PROTOCOL_VERSION+x} ]]; then
+    PROTOCOL_VERSION=$ENHANCED_PROTOCOL_VERSION
+fi
 #SERVER_ID -> Is generated sequentially
 #SERVER_ACCESS_POINT -> Is generated sequentially
 

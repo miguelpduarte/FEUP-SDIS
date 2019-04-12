@@ -23,12 +23,12 @@ public class ChunkBackupInfo implements Serializable {
 
     public void addReplicator(String peer_id) {
         this.replicators.put(peer_id, ProtocolDefinitions.MOCK_HASHMAP_SET_VALUE);
-        //System.out.printf("INC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
+        // System.out.printf("INC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
     }
 
     public void removeReplicator(String peer_id) {
         this.replicators.remove(peer_id);
-        //System.out.printf("DEC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
+        // System.out.printf("DEC->Peer:%s! Chunk with file_id '%s' and no '%d' was now backed up by %d peers (replication degree of %d)\n", peer_id, this.file_id, this.chunk_no, this.replicators.size(), this.replication_degree);
     }
 
     public boolean isReplicated() {

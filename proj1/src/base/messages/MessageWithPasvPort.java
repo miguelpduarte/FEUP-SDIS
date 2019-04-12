@@ -5,8 +5,8 @@ import base.ProtocolDefinitions;
 public class MessageWithPasvPort extends MessageWithChunkNo {
     private final int pasv_port;
 
-    public MessageWithPasvPort(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int chunk_no, int crlf_index, byte[] message, int msg_length) throws InvalidMessageFormatException {
-        super(message_type, version, sender_id, file_id, chunk_no, crlf_index, message, msg_length);
+    public MessageWithPasvPort(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int chunk_no, byte[] message, int msg_length, int crlf_index) throws InvalidMessageFormatException {
+        super(message_type, version, sender_id, file_id, chunk_no, message, msg_length, crlf_index);
         pasv_port = parsePort();
     }
 

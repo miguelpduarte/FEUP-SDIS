@@ -47,7 +47,8 @@ public class Restorer implements Keyable {
         unregister();
     }
 
-    public void stopWriter() {
+    public synchronized void stopWriter() {
+        System.out.println("Restorer.stopWriter");
         this.writer_running = false;
         unregister();
     }

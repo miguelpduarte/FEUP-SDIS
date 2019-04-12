@@ -15,7 +15,7 @@ public class CommonMessage implements Keyable {
     protected final int msg_length;
     private final int last_crlf_index;
 
-    public CommonMessage(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, int crlf_index, byte[] message, int msg_length) {
+    public CommonMessage(ProtocolDefinitions.MessageType message_type, String version, String sender_id, String file_id, byte[] message, int msg_length, int crlf_index) {
         this.message_type = message_type;
         this.version = version;
         this.sender_id = sender_id;

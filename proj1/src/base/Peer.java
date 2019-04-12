@@ -5,13 +5,14 @@ import base.channels.ChannelManager;
 import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
 import base.messages.MessageFactory;
+import base.protocol.task.*;
 import base.storage.*;
+import base.storage.requested.NullRequestedBackupFile;
 import base.storage.requested.RequestedBackupFile;
 import base.storage.requested.RequestedBackupFileChunk;
 import base.storage.requested.RequestedBackupsState;
 import base.storage.stored.ChunkBackupInfo;
 import base.storage.stored.ChunkBackupState;
-import base.tasks.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,14 +91,37 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         final String file_name = new File(file_path).getName();
         final String file_id = MessageFactory.filenameEncode(file_name);
 
+        if (RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id) instanceof NullRequestedBackupFile) {
+            System.out.println("File was not backed up by this Peer, cannot restore!");
+            return -1;
+        }
+
         TaskManager.getInstance().registerTask(new RestoreTask(file_id, file_name));
 
         return 0;
     }
 
     @Override
-    public int restoreEnhanced(String filename) throws RemoteException {
-        return -1;
+    public int restoreEnhanced(String file_path) {
+        if (!ProtocolDefinitions.VERSION.equals(ProtocolDefinitions.IMPROVED_VERSION)) {
+            System.out.println("Enhancement called while not running the correct version of the protocol");
+            return -1;
+        }
+
+        System.out.println("Peer.restore");
+        System.out.println("file_path = [" + file_path + "]");
+
+        final String file_name = new File(file_path).getName();
+        final String file_id = MessageFactory.filenameEncode(file_name);
+
+        if (RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id) instanceof NullRequestedBackupFile) {
+            System.out.println("File was not backed up by this Peer, cannot restore!");
+            return -1;
+        }
+
+        TaskManager.getInstance().registerTask(new EnhancedRestoreTask(file_id, file_name));
+
+        return 0;
     }
 
 

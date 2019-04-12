@@ -6,22 +6,21 @@ import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
 import base.messages.MessageWithPasvPort;
+import base.protocol.EnhancedPutchunkHandler;
+import base.protocol.task.EnhancedRestoreTask;
+import base.protocol.task.PutchunkTask;
+import base.protocol.task.Task;
+import base.protocol.task.TaskManager;
+import base.storage.StorageManager;
 import base.storage.requested.RequestedBackupFile;
 import base.storage.requested.RequestedBackupFileChunk;
 import base.storage.requested.RequestedBackupsState;
 import base.storage.stored.ChunkBackupInfo;
 import base.storage.stored.ChunkBackupState;
-import base.storage.StorageManager;
-import base.tasks.EnhancedPutchunkHandler;
-import base.tasks.PutchunkTask;
-import base.tasks.Task;
-import base.tasks.TaskManager;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.util.concurrent.Future;
 
 public class ControlChannelHandler extends ChannelHandler {
@@ -84,18 +83,10 @@ public class ControlChannelHandler extends ChannelHandler {
     }
 
     private void handlePasvChunk(MessageWithPasvPort info, InetAddress address) {
-        try {
-            Socket s = new Socket(address, info.getPasvPort());
-            ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-            byte[] chunk_data = (byte[]) ois.readObject();
-            // TODO
-        } catch (IOException e) {
-            System.out.println("ControlChannelHandler.handlePasvChunk :c");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        final Task t = TaskManager.getInstance().getTask(info);
+        if (t != null) {
+            ((EnhancedRestoreTask) t).notify(info, address);
         }
-
     }
 
     private void handleRemoved(CommonMessage info) {
@@ -176,11 +167,16 @@ public class ControlChannelHandler extends ChannelHandler {
 
     private void handleStored(CommonMessage info) {
         // If the chunk is backed up here, then count up the number of replicators in the system
-        ChunkBackupState.getInstance().getChunkBackupInfo(info.getFileId(), ((MessageWithChunkNo)info).getChunkNo()).addReplicator(info.getSenderId());
+        ChunkBackupState.getInstance()
+                .getChunkBackupInfo(info.getFileId(), ((MessageWithChunkNo)info).getChunkNo())
+                .addReplicator(info.getSenderId());
 
-        final RequestedBackupFile requestedFileBackupInfo = RequestedBackupsState.getInstance().getRequestedFileBackupInfo(info.getFileId());
-        final RequestedBackupFileChunk chunk = requestedFileBackupInfo.getChunk(((MessageWithChunkNo)info).getChunkNo());
-        chunk.addReplicator(info.getSenderId());
+        RequestedBackupsState.getInstance()
+                .getRequestedFileBackupInfo(info.getFileId())
+                .getChunk(((MessageWithChunkNo)info).getChunkNo())
+                .addReplicator(info.getSenderId());
+
+        System.out.println("ControlChannelHandler.handleStored");
 
         Task t = TaskManager.getInstance().getTask(info);
         if (t != null) {
