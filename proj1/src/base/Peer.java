@@ -5,6 +5,7 @@ import base.channels.ChannelManager;
 import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
 import base.messages.MessageFactory;
+import base.protocol.subprotocols.BackupSubprotocol;
 import base.protocol.task.*;
 import base.storage.StorageManager;
 import base.storage.requested.NullRequestedBackupFile;
@@ -16,7 +17,6 @@ import base.storage.stored.ChunkBackupState;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.List;
@@ -68,10 +68,13 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             byte[] file_data = StorageManager.readFromFile(file_path);
             byte[][] split_file_data = MessageFactory.splitFileContents(file_data);
 
-            for (int i = 0; i < split_file_data.length; ++i) {
+            new BackupSubprotocol(file_id, replication_factor, split_file_data, false);
+
+            // TODO Delete
+            /*for (int i = 0; i < split_file_data.length; ++i) {
                 TaskManager.getInstance().registerTask(new PutchunkTask(file_id, i, replication_factor, split_file_data[i]));
                 RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).registerChunk(new RequestedBackupFileChunk(file_id, i, replication_factor));
-            }
+            }*/
         } catch (IOException e) {
             e.printStackTrace();
             return -1;
@@ -102,10 +105,12 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             byte[] file_data = StorageManager.readFromFile(file_path);
             byte[][] split_file_data = MessageFactory.splitFileContents(file_data);
 
-            for (int i = 0; i < split_file_data.length; ++i) {
+            new BackupSubprotocol(file_id, replication_factor, split_file_data, true);
+
+            /*for (int i = 0; i < split_file_data.length; ++i) {
                 TaskManager.getInstance().registerTask(new EnhancedPutchunkTask(file_id, i, replication_factor, split_file_data[i]));
                 RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).registerChunk(new RequestedBackupFileChunk(file_id, i, replication_factor));
-            }
+            }*/
         } catch (IOException e) {
             e.printStackTrace();
             return -1;

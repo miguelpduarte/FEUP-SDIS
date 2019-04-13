@@ -15,6 +15,7 @@ public abstract class Task implements Keyable {
     protected int current_attempt;
     private ScheduledFuture next_action;
     private boolean is_communicating = false;
+    private ITaskObserver observer;
 
     public Task(String file_id) {
         this.file_id = file_id;
@@ -92,7 +93,7 @@ public abstract class Task implements Keyable {
 
     protected abstract void printSendingMessage();
 
-    protected final void unregister() {
+    public final void unregister() {
         TaskManager.getInstance().unregisterTask(this);
     }
 
@@ -106,5 +107,9 @@ public abstract class Task implements Keyable {
 
     protected synchronized final void incrementAttemptNumber() {
         this.current_attempt++;
+    }
+
+    public void observe(ITaskObserver observer) {
+        this.observer = observer;
     }
 }

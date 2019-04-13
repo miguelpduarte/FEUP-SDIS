@@ -6,6 +6,7 @@ import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
+import base.protocol.subprotocols.BackupSubprotocol;
 
 import java.util.HashSet;
 
