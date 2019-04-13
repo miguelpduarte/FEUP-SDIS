@@ -33,6 +33,7 @@ public class EnhancedPutchunkHandler {
         this.port = this.server_socket.getLocalPort();
         advertiseService();
         listenAndReply();
+        System.out.println("Closing server socket");
         this.server_socket.close();
     }
 
@@ -52,18 +53,19 @@ public class EnhancedPutchunkHandler {
         try {
             final Socket connection = this.server_socket.accept();
             System.out.println("A connection was accepted!");
-            // Using ObjectOutputStream because this ensures that the byte[] is written as an object (aka all at once)
             ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
+            // Using ObjectOutputStream because this ensures that the byte[] is read as an object (aka all at once)
             byte[] chunk_data = (byte[]) ois.readObject();
             System.out.printf("Receiving succesful! Now storing %d bytes!\n", chunk_data.length);
 
-            ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
             if (!writeChunkToFile(chunk_data)) {
-                System.out.println("Failed in writing chunk to file!");
                 oos.writeBoolean(false);
+                System.out.println("Failed in writing chunk to file!");
                 return;
             }
 
+            System.out.println("Wrote stuff to file");
             oos.writeBoolean(true);
             connection.close();
 
@@ -74,10 +76,8 @@ public class EnhancedPutchunkHandler {
             // Socket awaiting connection timed out
             System.out.println("Socket awaiting connection to receive timed out!");
             return;
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             System.out.println("EnhancedPutchunkHandler.listenAndReply");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }

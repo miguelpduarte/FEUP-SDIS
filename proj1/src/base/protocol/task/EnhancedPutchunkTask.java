@@ -68,12 +68,14 @@ public class EnhancedPutchunkTask extends PutchunkTask {
 
         // Connecting to the remote peer
         System.out.println("Connecting to: " + address + ":" + msg.getPasvPort());
-        try(Socket s = new Socket(address, msg.getPasvPort())) {
+        try (Socket s = new Socket(address, msg.getPasvPort())) {
             ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-            oos.writeObject(this.body);
             ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-            s.getInputStream()
+            oos.writeObject(this.body);
+            // TODO Remove DBG prints
+            System.out.println("1");
             boolean backup_success = ois.readBoolean();
+            System.out.println("2");
             if (backup_success) {
                 this.replicators.add(msg.getSenderId());
                 this.ongoing_replications.remove(msg.getSenderId());
