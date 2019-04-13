@@ -10,6 +10,7 @@ public class ProtocolDefinitions {
     public static final String STORED_CHUNKS_BACKUP_INFORMATION_FILENAME = "saved_state.sdis";
     public static final Boolean MOCK_HASHMAP_SET_VALUE = true;
     public static final int BACKUP_INTERVAL_SECONDS = 30;
+    public static final int SECOND_TO_MILIS = 1000;
 
     public static String VERSION;
     public static final String INITIAL_VERSION = "1.0";

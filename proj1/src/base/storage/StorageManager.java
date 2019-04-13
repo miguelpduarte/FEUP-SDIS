@@ -72,7 +72,7 @@ public class StorageManager {
 
     public boolean storeChunk(String file_id, int chunk_no, byte[] data) {
         if (this.hasChunk(file_id, chunk_no)) {
-            System.out.printf("\tChunk with file_id '%s' and chunk_no '%d' already stored", file_id, chunk_no);
+            System.out.printf("\tChunk with file_id '%s' and chunk_no '%d' already stored\n", file_id, chunk_no);
             return true;
         }
 

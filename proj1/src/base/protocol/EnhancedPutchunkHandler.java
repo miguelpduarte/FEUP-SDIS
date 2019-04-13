@@ -29,7 +29,7 @@ public class EnhancedPutchunkHandler {
         this.replication_degree = ((MessageWithReplicationDegree)info).getReplicationDegree();
         this.server_socket = new ServerSocket(0);
         // The timeout value is the maximum exponential backoff time delay used for retries in other subprotocols
-        this.server_socket.setSoTimeout(ProtocolDefinitions.getMaxMessageDelay());
+        this.server_socket.setSoTimeout(ProtocolDefinitions.getMaxMessageDelay() * ProtocolDefinitions.SECOND_TO_MILIS);
         this.port = this.server_socket.getLocalPort();
         advertiseService();
         listenAndReply();
@@ -37,14 +37,15 @@ public class EnhancedPutchunkHandler {
     }
 
     private void advertiseService() {
-        ThreadManager.getInstance().executeLater(() -> {
-            final byte[] message = MessageFactory.createCanStoreMessage(this.file_id, this.chunk_no, this.port);
+        final byte[] message = MessageFactory.createCanStoreMessage(this.file_id, this.chunk_no, this.port);
+        System.out.println("Waiting for data on port " + this.port);
+        ThreadManager.getInstance().executeLaterMilis(() -> {
             try {
                 ChannelManager.getInstance().getControl().broadcast(message);
             } catch (IOException e) {
                 System.out.println("Error when advertising TCP Restore service");
             }
-        });
+        }, ProtocolDefinitions.getRandomMessageDelayMilis());
     }
 
     private void listenAndReply() {
@@ -54,10 +55,11 @@ public class EnhancedPutchunkHandler {
             // Using ObjectOutputStream because this ensures that the byte[] is written as an object (aka all at once)
             ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
             byte[] chunk_data = (byte[]) ois.readObject();
-            System.out.println("Receiving succesful! Now storing!");
+            System.out.printf("Receiving succesful! Now storing %d bytes!\n", chunk_data.length);
 
             ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
             if (!writeChunkToFile(chunk_data)) {
+                System.out.println("Failed in writing chunk to file!");
                 oos.writeBoolean(false);
                 return;
             }

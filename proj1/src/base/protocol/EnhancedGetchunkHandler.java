@@ -25,7 +25,7 @@ public class EnhancedGetchunkHandler {
         this.chunk_data = chunk_data;
         this.server_socket = new ServerSocket(0);
         // The timeout value is the maximum exponential backoff time delay used for retries in other subprotocols
-        this.server_socket.setSoTimeout(ProtocolDefinitions.getMaxMessageDelay());
+        this.server_socket.setSoTimeout(ProtocolDefinitions.getMaxMessageDelay() * ProtocolDefinitions.SECOND_TO_MILIS);
         this.port = this.server_socket.getLocalPort();
         advertiseService();
         listenAndReply();

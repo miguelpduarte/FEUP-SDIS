@@ -27,13 +27,21 @@ public abstract class Task implements Keyable {
 
     public abstract void notify(CommonMessage msg);
 
-    protected synchronized final void startCommuncation() {
-        if (is_communicating) {
+    protected final void startCommuncation() {
+        if (this.isCommunicating()) {
             return;
         }
-        is_communicating = true;
+        this.setIsCommunicating(true);
         // Kickstarting the channels "loop"
         ThreadManager.getInstance().executeLater(this::communicate);
+    }
+
+    private synchronized final void setIsCommunicating(boolean is_communicating) {
+        this.is_communicating = is_communicating;
+    }
+
+    private synchronized final boolean isCommunicating() {
+        return this.is_communicating;
     }
 
     protected abstract byte[] createMessage();
@@ -43,6 +51,11 @@ public abstract class Task implements Keyable {
     }
 
     private void communicate() {
+        if (!this.isCommunicating()) {
+            System.out.println("Not communicating atm!"); // TODO REMOVE? handling repeated calls (?)
+            return;
+        }
+
         if (this.getCurrentAttempt() >= ProtocolDefinitions.MESSAGE_DELAYS.length) {
             this.handleMaxRetriesReached();
             return;
@@ -63,11 +76,11 @@ public abstract class Task implements Keyable {
 
     protected abstract ChannelHandler getChannel();
 
-    protected synchronized final void cancelCommunication() {
-        if (!is_communicating) {
+    protected final void cancelCommunication() {
+        if (!this.isCommunicating()) {
             System.out.println("Cancelling non-running communication");
         }
-        is_communicating = false;
+        this.setIsCommunicating(false);
         this.next_action.cancel(true);
     }
 

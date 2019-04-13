@@ -1,9 +1,7 @@
 package base.protocol.task;
 
 import base.ProtocolDefinitions;
-import base.messages.CommonMessage;
 import base.messages.MessageFactory;
-import base.messages.MessageWithChunkNo;
 import base.messages.MessageWithPasvPort;
 
 import java.io.IOException;
@@ -66,14 +64,16 @@ public class EnhancedPutchunkTask extends PutchunkTask {
 
         // Entering into protocol processing for a certain peer
 
-        this.cancelCommunication();
+        this.cancelCommunication(); // TODO use but not broken
 
         // Connecting to the remote peer
+        System.out.println("Connecting to: " + address + ":" + msg.getPasvPort());
         try(Socket s = new Socket(address, msg.getPasvPort())) {
             ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
             oos.writeObject(this.body);
             ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
-            boolean backup_success = (boolean) ois.readObject();
+            s.getInputStream()
+            boolean backup_success = ois.readBoolean();
             if (backup_success) {
                 this.replicators.add(msg.getSenderId());
                 this.ongoing_replications.remove(msg.getSenderId());
@@ -84,12 +84,12 @@ public class EnhancedPutchunkTask extends PutchunkTask {
                 }
             } else {
                 System.out.printf(":CCC : %s could not replicate the file!!\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
-                this.startCommuncation();
+                this.startCommuncation(); // TODO use but not broken
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             // Failure, resume communication
-            this.startCommuncation();
+            this.startCommuncation(); // TODO use but not broken
         }
     }
 }
