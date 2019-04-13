@@ -15,7 +15,9 @@ public abstract class Task implements Keyable {
     protected final String file_id;
     protected int current_attempt;
     private ScheduledFuture next_action;
+    // Must have synchronized access
     private boolean is_communicating = false;
+    private boolean is_running = true;
 
     public Task(String file_id) {
         this.file_id = file_id;
@@ -43,6 +45,14 @@ public abstract class Task implements Keyable {
 
     private synchronized boolean isCommunicating() {
         return this.is_communicating;
+    }
+
+    protected synchronized void stopRunning() {
+        this.is_running = false;
+    }
+
+    protected synchronized boolean isRunning() {
+        return this.is_running;
     }
 
     protected abstract byte[] createMessage();
@@ -94,6 +104,7 @@ public abstract class Task implements Keyable {
     public final void stopTask() {
         this.unregister();
         this.cancelCommunication();
+        this.stopRunning();
     }
 
     protected final void unregister() {

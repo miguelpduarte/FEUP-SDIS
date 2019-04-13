@@ -37,6 +37,10 @@ public class PutchunkTask extends ObservableTask {
 
     @Override
     public void notify(CommonMessage msg) {
+        if (!this.isRunning()) {
+            return;
+        }
+
         if (msg.getMessageType() != ProtocolDefinitions.MessageType.STORED) {
             System.out.println("DBG:PutchunkTask.notify::Message was not of type STORED!");
             return;

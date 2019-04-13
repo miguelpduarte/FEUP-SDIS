@@ -38,6 +38,10 @@ public class RestoreTask extends Task {
 
     @Override
     public void notify(CommonMessage msg) {
+        if (!this.isRunning()) {
+            return;
+        }
+
         if (msg.getMessageType() != ProtocolDefinitions.MessageType.CHUNK) {
             System.out.println("DBG:RestoreTask.notify::Message was not of type CHUNK!");
             return;

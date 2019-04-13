@@ -40,6 +40,10 @@ public class EnhancedPutchunkTask extends PutchunkTask {
     }
 
     public synchronized void notify(MessageWithPasvPort msg, InetAddress address) {
+        if (!this.isRunning()) {
+            return;
+        }
+
         if (msg.getMessageType() != ProtocolDefinitions.MessageType.CANSTORE) {
             System.out.println("EnhancedPutchunkTask.notify::Message was not of type CANSTORE!");
             return;

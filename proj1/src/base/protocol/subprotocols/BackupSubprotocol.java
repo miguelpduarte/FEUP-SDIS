@@ -58,9 +58,11 @@ public class BackupSubprotocol implements ITaskObserver {
         this.running_tasks.values().forEach(Task::stopTask);
         this.running_tasks.clear();
 
+        // Unregistering file from requested backups
+        RequestedBackupsState.getInstance().unregisterRequestedFile(this.file_id);
+
         System.out.println("All tasks stopped.");
         System.out.printf("Backup of file with id %s unsuccessful. Running tasks terminated and process aborted.\n", this.file_id);
-        // TODO Suicide object
 
         // TODO Launch delete subprotocol for this file_id
     }
