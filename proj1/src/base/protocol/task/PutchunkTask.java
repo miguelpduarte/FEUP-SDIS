@@ -6,19 +6,16 @@ import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
-import base.protocol.subprotocols.BackupSubprotocol;
 
 import java.util.HashSet;
 
-public class PutchunkTask extends Task {
+public class PutchunkTask extends ObservableTask {
     protected final int replication_deg;
     protected final HashSet<String> replicators = new HashSet<>();
     protected final byte[] body;
-    protected final int chunk_no;
 
     public PutchunkTask(String file_id, int chunk_no, int replication_deg, byte[] body) {
-        super(file_id);
-        this.chunk_no = chunk_no;
+        super(file_id, chunk_no);
         this.body = body;
         this.replication_deg = replication_deg;
         prepareMessage();
@@ -32,8 +29,10 @@ public class PutchunkTask extends Task {
 
     @Override
     protected void handleMaxRetriesReached() {
+        // TODO: Task.handleMaxRetriesReached should be abstract
         super.handleMaxRetriesReached();
         System.out.printf("Maximum retries reached for PutchunkTask for fileid '%s' and chunk_no '%d'\n", this.file_id, this.chunk_no);
+        this.notifyObserver(false);
     }
 
     @Override
@@ -56,6 +55,8 @@ public class PutchunkTask extends Task {
                 System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of at least '%d'\n", this.chunk_no, this.file_id, this.replication_deg);
                 cancelCommunication();
                 this.unregister();
+                // Had success!!
+                this.notifyObserver(true);
             }
         }
     }
