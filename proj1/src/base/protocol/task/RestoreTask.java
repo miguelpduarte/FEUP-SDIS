@@ -7,6 +7,7 @@ import base.messages.CommonMessage;
 import base.messages.InvalidMessageFormatException;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
+import base.protocol.task.extendable.Task;
 import base.storage.RestoreManager;
 import base.storage.Restorer;
 

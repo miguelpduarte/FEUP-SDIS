@@ -21,6 +21,7 @@ public class EnhancedPutchunkTask extends PutchunkTask {
     protected void handleMaxRetriesReached() {
         this.unregister();
         System.out.printf("Maximum retries reached for EnhancedPutchunkTask for fileid '%s' and chunk_no '%d'\n", this.file_id, this.chunk_no);
+        this.notifyObserver(false);
     }
 
     @Override
@@ -71,11 +72,18 @@ public class EnhancedPutchunkTask extends PutchunkTask {
             // TODO Remove DBG prints
             this.replicators.add(msg.getSenderId());
             this.ongoing_replications.remove(msg.getSenderId());
-            System.out.printf("yay!!: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
+            // System.out.printf("yay!!: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
+
             if (this.replicators.size() >= this.replication_deg) {
                 System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of '%d'\n", this.chunk_no, this.file_id, this.replication_deg);
                 this.unregister();
+                // Success!
+                this.notifyObserver(true);
+                return;
             }
+
+            // Resuming communication as the desired replication was not yet reached
+            this.startCommuncation();
         } catch (IOException e) {
             e.printStackTrace();
             // Failure, resume communication

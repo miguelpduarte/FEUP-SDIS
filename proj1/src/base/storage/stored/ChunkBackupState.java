@@ -17,7 +17,9 @@ public class ChunkBackupState implements Serializable {
         return instance;
     }
 
-    public static void setInstance(ChunkBackupState instance) { ChunkBackupState.instance = instance; }
+    public static void setInstance(ChunkBackupState instance) {
+        ChunkBackupState.instance = instance;
+    }
 
     private ChunkBackupState() {
     }
@@ -48,6 +50,7 @@ public class ChunkBackupState implements Serializable {
 
     /**
      * Calculates the best chunks to remove, in order
+     *
      * @return The best chunks to remove for the reclaim protocol, ordered by how good they are. It is a Stream and thus should be consumed using Stream.findFirst() until the space restriction is respected.
      */
     public List<ChunkBackupInfo> getChunksCandidateForRemoval() {

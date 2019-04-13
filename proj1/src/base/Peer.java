@@ -201,6 +201,8 @@ public class Peer extends UnicastRemoteObject implements IPeer {
                     final ChunkBackupInfo candidate_chunk = chunks_candidate_for_removal.get(candidate_idx);
                     System.out.println("candidate_for_removal = " + candidate_chunk);
 
+                    // Register that the chunk is no longer backed up
+                    ChunkBackupState.getInstance().unregisterBackup(candidate_chunk.getFileId(), candidate_chunk.getChunkNo());
                     // Delete Chunk
                     if (!StorageManager.getInstance().removeChunk(candidate_chunk.getFileId(), candidate_chunk.getChunkNo())) {
                         System.err.printf("Error in removing chunk for file_id '%s' and no '%d'\n", candidate_chunk.getFileId(), candidate_chunk.getChunkNo());

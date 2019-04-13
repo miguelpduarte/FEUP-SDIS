@@ -1,4 +1,4 @@
-package base.protocol.task;
+package base.protocol.task.extendable;
 
 public class NullTaskObserver implements ITaskObserver {
     @Override

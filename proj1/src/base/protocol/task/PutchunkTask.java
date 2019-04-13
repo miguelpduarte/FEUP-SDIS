@@ -6,6 +6,7 @@ import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
+import base.protocol.task.extendable.ObservableTask;
 
 import java.util.HashSet;
 
@@ -29,8 +30,7 @@ public class PutchunkTask extends ObservableTask {
 
     @Override
     protected void handleMaxRetriesReached() {
-        // TODO: Task.handleMaxRetriesReached should be abstract
-        super.handleMaxRetriesReached();
+        this.unregister();
         System.out.printf("Maximum retries reached for PutchunkTask for fileid '%s' and chunk_no '%d'\n", this.file_id, this.chunk_no);
         this.notifyObserver(false);
     }
@@ -49,7 +49,7 @@ public class PutchunkTask extends ObservableTask {
 
         synchronized (this) {
             this.replicators.add(msg.getSenderId());
-            System.out.printf("DBG: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
+            // System.out.printf("DBG: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
             if (this.replicators.size() >= this.replication_deg) {
                 // System.out.println("DBG: Replication minimum reached! Stopping future messages and unregistering task!");
                 System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of at least '%d'\n", this.chunk_no, this.file_id, this.replication_deg);

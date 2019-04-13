@@ -1,6 +1,11 @@
 package base.protocol.subprotocols;
 
-import base.protocol.task.*;
+import base.protocol.task.EnhancedPutchunkTask;
+import base.protocol.task.PutchunkTask;
+import base.protocol.task.TaskManager;
+import base.protocol.task.extendable.ITaskObserver;
+import base.protocol.task.extendable.ObservableTask;
+import base.protocol.task.extendable.Task;
 import base.storage.requested.RequestedBackupFileChunk;
 import base.storage.requested.RequestedBackupsState;
 
@@ -12,11 +17,12 @@ public class BackupSubprotocol implements ITaskObserver {
     private final String file_id;
     private final int replication_degree;
     private final byte[][] chunks_data;
-    private final ConcurrentHashMap<Task, Boolean> running_tasks = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, Task> running_tasks = new ConcurrentHashMap<>();
     private final int last_chunk_no;
     private final boolean is_enhanced_version;
-    // Access to this must be synchronized
+    // Access to these fields must be synchronized
     private int last_running_chunk_no;
+    private int n_backed_up;
 
     public BackupSubprotocol(String file_id, int replication_degree, byte[][] chunks_data, boolean is_enhanced_version) {
         this.file_id = file_id;
@@ -37,11 +43,19 @@ public class BackupSubprotocol implements ITaskObserver {
         this.last_running_chunk_no++;
     }
 
+    private synchronized void incrementNrBackedUpChunks() {
+        this.n_backed_up++;
+    }
+
+    private synchronized int getNrBackedupChunks() {
+        return this.n_backed_up;
+    }
+
     private void stopAllTasks() {
         // TODO
         // Iterate over the hashmap keys and unregister all of the tasks. Print "not success"
         System.out.println("Stopping all of the tasks because one was not successful");
-        this.running_tasks.keySet().forEach(Task::unregister);
+        this.running_tasks.values().forEach(Task::stopTask);
         this.running_tasks.clear();
 
         System.out.println("All tasks stopped.");
@@ -55,9 +69,36 @@ public class BackupSubprotocol implements ITaskObserver {
     public void notifyEnd(boolean success, int task_id) {
         if (!success) {
             System.out.printf("Task for chunk %d was not successful.\n", task_id);
+            this.stopAllTasks();
         } else {
+            // Task was successful
+            this.incrementNrBackedUpChunks();
+
+            final int nr_backed_up_chunks = this.getNrBackedupChunks();
+            displayProgressBar(nr_backed_up_chunks);
+
+            if (nr_backed_up_chunks == this.last_chunk_no) {
+                System.out.printf("-->File with id %s successfully backed up!!!\n", this.file_id);
+                return;
+            }
+            // (This task is no longer being executed)
+            this.running_tasks.remove(task_id);
             this.launchNextTask();
         }
+    }
+
+    protected void displayProgressBar(double nr_backed_up_chunks) {
+        final int progress = (int) ((nr_backed_up_chunks / this.last_chunk_no) * 20);
+
+        System.out.print("Progress: ");
+        int i = 0;
+        for (; i < progress; ++i) {
+            System.out.print("=");
+        }
+        for (; i < 20; ++i) {
+            System.out.print("_");
+        }
+        System.out.println();
     }
 
     private void launchInitialTasks() {
@@ -74,20 +115,18 @@ public class BackupSubprotocol implements ITaskObserver {
 
         final int last_running_chunk_no = this.getLastRunningChunkNo();
 
-        System.out.printf("Launching task for chunk_no %d. #Running tasks: %d\n", last_running_chunk_no, this.running_tasks.size());
+        System.out.printf("-->Launching task for chunk_no %03d. #Running tasks: %03d\n", last_running_chunk_no, this.running_tasks.size());
 
-        // TODO implement notifying in the tasks (maybe method in Task? or just have a NullObserver)
+        ObservableTask ot;
         if (this.is_enhanced_version) {
-            Task t = new EnhancedPutchunkTask(file_id, last_running_chunk_no, replication_degree, chunks_data[last_running_chunk_no]);
-            t.observe(this);
-            TaskManager.getInstance().registerTask(t);
-            RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).registerChunk(new RequestedBackupFileChunk(file_id, last_running_chunk_no, replication_degree));
+            ot = new EnhancedPutchunkTask(file_id, last_running_chunk_no, replication_degree, chunks_data[last_running_chunk_no]);
         } else {
-            Task t = new PutchunkTask(file_id, last_running_chunk_no, replication_degree, chunks_data[last_running_chunk_no]);
-            t.observe(this);
-            TaskManager.getInstance().registerTask(t);
-            RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).registerChunk(new RequestedBackupFileChunk(file_id, last_running_chunk_no, replication_degree));
+            ot = new PutchunkTask(file_id, last_running_chunk_no, replication_degree, chunks_data[last_running_chunk_no]);
         }
+        ot.observe(this);
+        TaskManager.getInstance().registerTask(ot);
+        RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).registerChunk(new RequestedBackupFileChunk(file_id, last_running_chunk_no, replication_degree));
+        this.running_tasks.put(last_running_chunk_no, ot);
 
         this.incrementLastRunningChunkNo();
     }

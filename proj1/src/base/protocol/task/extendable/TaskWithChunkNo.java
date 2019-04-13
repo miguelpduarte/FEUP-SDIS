@@ -1,4 +1,4 @@
-package base.protocol.task;
+package base.protocol.task.extendable;
 
 public abstract class TaskWithChunkNo extends Task {
     protected final int chunk_no;

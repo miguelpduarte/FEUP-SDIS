@@ -6,7 +6,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class ThreadManager {
-    private final int N_THREADS = 9;
+    private final int N_THREADS = 19;
     private ScheduledThreadPoolExecutor scheduled_executor = new ScheduledThreadPoolExecutor(N_THREADS);
 
     private static ThreadManager instance = new ThreadManager();

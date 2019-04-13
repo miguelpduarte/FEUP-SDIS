@@ -8,6 +8,7 @@ import base.messages.MessageWithChunkNo;
 import base.messages.MessageWithPasvPort;
 import base.protocol.EnhancedGetchunkHandler;
 import base.protocol.task.*;
+import base.protocol.task.extendable.Task;
 import base.storage.StorageManager;
 import base.storage.requested.RequestedBackupsState;
 import base.storage.stored.ChunkBackupInfo;
@@ -177,8 +178,6 @@ public class ControlChannelHandler extends ChannelHandler {
                 .getRequestedFileBackupInfo(info.getFileId())
                 .getChunk(((MessageWithChunkNo) info).getChunkNo())
                 .addReplicator(info.getSenderId());
-
-        System.out.println("ControlChannelHandler.handleStored");
 
         Task t = TaskManager.getInstance().getTask(info);
         if (t != null) {

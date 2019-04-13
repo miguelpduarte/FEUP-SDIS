@@ -4,6 +4,7 @@ import base.channels.ChannelHandler;
 import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
+import base.protocol.task.extendable.Task;
 
 public class RemovedTask extends Task {
     private final int chunk_no;
@@ -24,6 +25,11 @@ public class RemovedTask extends Task {
     @Override
     protected byte[] createMessage() {
         return MessageFactory.createRemovedMessage(this.file_id, this.chunk_no);
+    }
+
+    @Override
+    protected void handleMaxRetriesReached() {
+        this.unregister();
     }
 
     @Override

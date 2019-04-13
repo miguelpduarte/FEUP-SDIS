@@ -38,7 +38,6 @@ public class EnhancedPutchunkHandler {
         advertiseService();
         listenAndReply();
 
-        System.out.println("Closing server socket");
         this.server_socket.close();
     }
 
@@ -81,11 +80,16 @@ public class EnhancedPutchunkHandler {
             System.out.println("Socket awaiting connection to receive timed out!");
             // Unregistering because there was a problem when backing up
             ChunkBackupState.getInstance().unregisterBackup(this.file_id, this.chunk_no);
+            if (StorageManager.getInstance().hasChunk(this.file_id, this.chunk_no)) {
+                StorageManager.getInstance().removeChunk(this.file_id, this.chunk_no);
+            }
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("EnhancedPutchunkHandler.listenAndReply");
             e.printStackTrace();
             // Unregistering because there was a problem when backing up
             ChunkBackupState.getInstance().unregisterBackup(this.file_id, this.chunk_no);
+            if (StorageManager.getInstance().hasChunk(this.file_id, this.chunk_no)) {
+                StorageManager.getInstance().removeChunk(this.file_id, this.chunk_no);
+            }
         }
     }
 

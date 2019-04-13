@@ -1,10 +1,11 @@
-package base.protocol.task;
+package base.protocol.task.extendable;
 
 import base.Keyable;
 import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.channels.ChannelHandler;
 import base.messages.CommonMessage;
+import base.protocol.task.TaskManager;
 
 import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
@@ -36,19 +37,17 @@ public abstract class Task implements Keyable {
         ThreadManager.getInstance().executeLater(this::communicate);
     }
 
-    private synchronized final void setIsCommunicating(boolean is_communicating) {
+    private synchronized void setIsCommunicating(boolean is_communicating) {
         this.is_communicating = is_communicating;
     }
 
-    private synchronized final boolean isCommunicating() {
+    private synchronized boolean isCommunicating() {
         return this.is_communicating;
     }
 
     protected abstract byte[] createMessage();
 
-    protected void handleMaxRetriesReached() {
-        this.unregister();
-    }
+    protected abstract void handleMaxRetriesReached();
 
     private void communicate() {
         if (!this.isCommunicating()) {
@@ -92,7 +91,12 @@ public abstract class Task implements Keyable {
 
     protected abstract void printSendingMessage();
 
-    public final void unregister() {
+    public final void stopTask() {
+        this.unregister();
+        this.cancelCommunication();
+    }
+
+    protected final void unregister() {
         TaskManager.getInstance().unregisterTask(this);
     }
 
@@ -104,7 +108,7 @@ public abstract class Task implements Keyable {
         return current_attempt;
     }
 
-    protected synchronized final void incrementAttemptNumber() {
+    private synchronized void incrementAttemptNumber() {
         this.current_attempt++;
     }
 }

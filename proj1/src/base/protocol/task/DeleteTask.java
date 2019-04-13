@@ -4,6 +4,7 @@ import base.channels.ChannelHandler;
 import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
+import base.protocol.task.extendable.Task;
 
 public class DeleteTask extends Task {
     public DeleteTask(String file_id) {
@@ -25,7 +26,7 @@ public class DeleteTask extends Task {
 
     @Override
     protected void handleMaxRetriesReached() {
-        super.handleMaxRetriesReached();
+        this.unregister();
         //TODO: Delete later, only being used for debug printing
         System.out.printf("DELETE for fileid '%s' reached the maximum number of retries\n", this.file_id);
     }

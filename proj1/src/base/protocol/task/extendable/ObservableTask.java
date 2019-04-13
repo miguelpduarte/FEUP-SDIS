@@ -1,4 +1,4 @@
-package base.protocol.task;
+package base.protocol.task.extendable;
 
 public abstract class ObservableTask extends TaskWithChunkNo {
     private ITaskObserver observer = new NullTaskObserver();

@@ -1,6 +1,7 @@
 package base.protocol.task;
 
 import base.Keyable;
+import base.protocol.task.extendable.Task;
 
 import java.util.concurrent.ConcurrentHashMap;
 

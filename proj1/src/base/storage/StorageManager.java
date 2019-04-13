@@ -108,7 +108,7 @@ public class StorageManager {
 
     public boolean removeChunk(String file_id, int chunk_no) {
         if (!this.hasChunk(file_id, chunk_no)) {
-            System.out.printf("Error deleting: Chunk with file_id '%s' and chunk_no '%d' is not stored", file_id, chunk_no);
+            System.out.printf("Error deleting: Chunk with file_id '%s' and chunk_no '%d' is not stored\n", file_id, chunk_no);
             return false;
         }
 
@@ -117,11 +117,13 @@ public class StorageManager {
         // Ensuring that the parent directories exist so that the FileOutputStream can create the file correctly
         final String chunk_path = String.format("%s/%s/chk%s", this.backup_dirname, file_id, chunk_no);
         File chunk = new File(chunk_path);
-        this.updateOccupiedSpace(-1 * (int) chunk.length());
+        final int chunk_length = (int) chunk.length();
 
         final boolean was_deleted = chunk.delete();
-        // Register that the chunk is no longer backed up
-        ChunkBackupState.getInstance().unregisterBackup(file_id, chunk_no);
+
+        if (was_deleted) {
+            this.updateOccupiedSpace(-1 * chunk_length);
+        }
         return was_deleted;
     }
 
@@ -184,7 +186,7 @@ public class StorageManager {
         }
     }
 
-    private boolean hasChunk(String file_id, int chunk_no) {
+    public boolean hasChunk(String file_id, int chunk_no) {
         final String file_path = String.format("%s/%s/chk%s", this.backup_dirname, file_id, chunk_no);
         final File f = new File(file_path);
         return f.exists();
