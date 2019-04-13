@@ -33,14 +33,14 @@ public class EnhancedGetchunkHandler {
     }
 
     private void advertiseService() {
-        ThreadManager.getInstance().executeLater(() -> {
+        ThreadManager.getInstance().executeLaterMilis(() -> {
             final byte[] message = MessageFactory.createPasvChunkMessage(this.file_id, this.chunk_no, this.port);
             try {
                 ChannelManager.getInstance().getControl().broadcast(message);
             } catch (IOException e) {
                 System.out.println("Error when advertising TCP Restore service");
             }
-        });
+        }, ProtocolDefinitions.getRandomMessageDelayMilis());
     }
 
     private void listenAndReply() {

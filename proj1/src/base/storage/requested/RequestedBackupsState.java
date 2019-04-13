@@ -37,7 +37,7 @@ public class RequestedBackupsState implements Serializable {
         this.backed_up_files.remove(file_id);
     }
 
-    public boolean isFileBackedUp(String file_id) {
+    public boolean didRequestBackup(String file_id) {
         return this.backed_up_files.containsKey(file_id);
     }
 

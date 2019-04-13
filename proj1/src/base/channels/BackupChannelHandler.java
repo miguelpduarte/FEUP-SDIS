@@ -4,6 +4,7 @@ import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.messages.*;
 import base.protocol.EnhancedPutchunkHandler;
+import base.storage.requested.RequestedBackupsState;
 import base.storage.stored.ChunkBackupState;
 import base.storage.StorageManager;
 
@@ -46,6 +47,11 @@ public class BackupChannelHandler extends ChannelHandler {
                 switch (info.getMessageType()) {
                     // TODO Verify if the backup was previously requested by this Peer (cannot store in that case)
                     case PUTCHUNK:
+                        // Middleware to ensure the rule: "A peer must never store the chunks of its own files"
+                        if (RequestedBackupsState.getInstance().didRequestBackup(info.getFileId())) {
+                            System.out.println("DBG: File was mine, not storing!"); // TODO delete this
+                            return;
+                        }
                         if (info.getVersion().equals(ProtocolDefinitions.INITIAL_VERSION)) {
                             handlePutchunk(info);
                         } else if (info.getVersion().equals(ProtocolDefinitions.IMPROVED_VERSION) && info.getVersion().equals(ProtocolDefinitions.VERSION)) {
