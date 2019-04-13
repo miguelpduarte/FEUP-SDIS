@@ -56,6 +56,11 @@ public abstract class Task implements Keyable {
             return;
         }
 
+//        if (this.next_action != null && !this.next_action.isCancelled()) {
+//            System.out.println("Next action not cancelled yet, not launching a new one!"); // TODO REMOVE? handling repeated calls (?)
+//            return;
+//        }
+
         if (this.getCurrentAttempt() >= ProtocolDefinitions.MESSAGE_DELAYS.length) {
             this.handleMaxRetriesReached();
             return;
@@ -79,6 +84,7 @@ public abstract class Task implements Keyable {
     protected final void cancelCommunication() {
         if (!this.isCommunicating()) {
             System.out.println("Cancelling non-running communication");
+            return;
         }
         this.setIsCommunicating(false);
         this.next_action.cancel(true);

@@ -117,7 +117,7 @@ public class StorageManager {
         // Ensuring that the parent directories exist so that the FileOutputStream can create the file correctly
         final String chunk_path = String.format("%s/%s/chk%s", this.backup_dirname, file_id, chunk_no);
         File chunk = new File(chunk_path);
-        this.updateOccupiedSpace(-1 * (int)chunk.length());
+        this.updateOccupiedSpace(-1 * (int) chunk.length());
 
         final boolean was_deleted = chunk.delete();
         // Register that the chunk is no longer backed up
@@ -127,6 +127,7 @@ public class StorageManager {
 
     /**
      * Used to ensure that a file exists and that it is empty before starting to append to it
+     *
      * @param file_name file to create or empty
      */
     public boolean createEmptyFileForRestore(String file_name) {
@@ -184,7 +185,9 @@ public class StorageManager {
     }
 
     private boolean hasChunk(String file_id, int chunk_no) {
-        return ChunkBackupState.getInstance().isChunkBackedUp(file_id, chunk_no);
+        final String file_path = String.format("%s/%s/chk%s", this.backup_dirname, file_id, chunk_no);
+        final File f = new File(file_path);
+        return f.exists();
     }
 
     public void removeFileChunksIfStored(String file_id) {
@@ -194,20 +197,15 @@ public class StorageManager {
             return;
         }
 
-        int dbg_n_removed = 0;
-
         // If the directory exists, we have stored chunks - must delete them individually and then delete the directory itself
         // Must not forget to unregister from the ConcurrentHashMap
         // TODO: Maybe fix verboseness
         for (File chunk : Objects.requireNonNull(file_backup_dir.listFiles())) {
             // Space was freed so the used space is updated
-            this.updateOccupiedSpace(-1 * (int)chunk.length());
+            this.updateOccupiedSpace(-1 * (int) chunk.length());
             // Unregistering as backed up chunks
             final int chunk_no = Integer.parseInt(chunk.getName().substring(3));
             ChunkBackupState.getInstance().unregisterBackup(file_id, chunk_no);
-            // System.out.println("DBG2: Occupied space is now " + this.getOccupiedSpaceBytes() + " bytes"); // TODO REMOVE
-            dbg_n_removed++;
-
             // Deleting after due to needing the original size for updating the occupied space
             chunk.delete();
         }
@@ -215,8 +213,6 @@ public class StorageManager {
         if (!file_backup_dir.delete()) {
             System.out.printf("Could not delete directory %s\n", file_backup_dir.getName());
         }
-
-        System.out.printf("Removed %d files\n", dbg_n_removed);
     }
 
     public static byte[] readFromFile(String file_path) throws IOException {

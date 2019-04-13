@@ -41,57 +41,46 @@ public class EnhancedPutchunkTask extends PutchunkTask {
 
     public synchronized void notify(MessageWithPasvPort msg, InetAddress address) {
         if (msg.getMessageType() != ProtocolDefinitions.MessageType.CANSTORE) {
-            System.out.println("DBG:PutchunkTask.notify::Message was not of type CANSTORE!");
+            System.out.println("EnhancedPutchunkTask.notify::Message was not of type CANSTORE!");
             return;
         }
 
         if (msg.getChunkNo() != this.chunk_no || !msg.getFileId().equals(this.file_id)) {
-            System.out.println("DBG:EnhancedPutchunkTask.notify::Message target was not this specific task");
+            System.out.println("EnhancedPutchunkTask.notify::Message target was not this specific task");
             return;
         }
 
         // Ensuring that the observed replication degree is not larger than the desired one
         if (ongoing_replications.size() + replicators.size() >= this.replication_deg) {
-            System.out.println("DBG:Outta here"); // TODO Remove
             return;
         }
 
         // Ensuring that backup is not attempted for the same Peer twice
         if (ongoing_replications.contains(msg.getSenderId()) || replicators.contains(msg.getSenderId())) {
-            System.out.println("DBG:Outta here 2"); // TODO Remove
             return;
         }
 
         // Entering into protocol processing for a certain peer
 
-        this.cancelCommunication(); // TODO use but not broken
+        this.cancelCommunication();
 
         // Connecting to the remote peer
-        System.out.println("Connecting to: " + address + ":" + msg.getPasvPort());
+        // System.out.println("Connecting to: " + address + ":" + msg.getPasvPort());
         try (Socket s = new Socket(address, msg.getPasvPort())) {
             ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-            ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
             oos.writeObject(this.body);
             // TODO Remove DBG prints
-            System.out.println("1");
-            boolean backup_success = ois.readBoolean();
-            System.out.println("2");
-            if (backup_success) {
-                this.replicators.add(msg.getSenderId());
-                this.ongoing_replications.remove(msg.getSenderId());
-                System.out.printf("yay!!: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
-                if (this.replicators.size() >= this.replication_deg) {
-                    System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of at least '%d'\n", this.chunk_no, this.file_id, this.replication_deg);
-                    this.unregister();
-                }
-            } else {
-                System.out.printf(":CCC : %s could not replicate the file!!\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
-                this.startCommuncation(); // TODO use but not broken
+            this.replicators.add(msg.getSenderId());
+            this.ongoing_replications.remove(msg.getSenderId());
+            System.out.printf("yay!!: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
+            if (this.replicators.size() >= this.replication_deg) {
+                System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of '%d'\n", this.chunk_no, this.file_id, this.replication_deg);
+                this.unregister();
             }
         } catch (IOException e) {
             e.printStackTrace();
             // Failure, resume communication
-            this.startCommuncation(); // TODO use but not broken
+            this.startCommuncation();
         }
     }
 }

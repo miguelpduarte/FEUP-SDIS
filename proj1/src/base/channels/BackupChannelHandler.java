@@ -44,6 +44,7 @@ public class BackupChannelHandler extends ChannelHandler {
                 System.out.printf("\t\tMDB: Received message of type %s\n", info.getMessageType().name());
 
                 switch (info.getMessageType()) {
+                    // TODO Verify if the backup was previously requested by this Peer (cannot store in that case)
                     case PUTCHUNK:
                         if (info.getVersion().equals(ProtocolDefinitions.INITIAL_VERSION)) {
                             handlePutchunk(info);
@@ -51,7 +52,6 @@ public class BackupChannelHandler extends ChannelHandler {
                             // Current version and message version MUST BE the Improved Version
                             handlePutchunkEnh((MessageWithChunkSize) info);
                         }
-                        handlePutchunk(info);
                         break;
                 }
             } catch (Exception e) {
@@ -79,21 +79,22 @@ public class BackupChannelHandler extends ChannelHandler {
     }
 
     private void storeChunk(CommonMessage info) {
-        // TODO Verify if the backup was previously requested by this Peer (cannot store in that case)
-
         try {
             final byte[] body = info.getBody();
             final String file_id = info.getFileId();
             final int chunk_no = ((MessageWithChunkNo)info).getChunkNo();
             final int replication_degree = ((MessageWithReplicationDegree)info).getReplicationDegree();
 
+            // Registering that the chunk will be stored to ensure that the observed replication degree is correct (all STOREDs are taken into account even before the storage is finished)
+            // This is unregistered if any problem occurs when actually storing the chunk
+            ChunkBackupState.getInstance().registerBackup(file_id, chunk_no, replication_degree, body.length);
+
             if (!StorageManager.getInstance().storeChunk(file_id, chunk_no, body)) {
                 System.out.printf("Storage of file id '%s' and chunk no '%d' was unsuccessful, aborting\n", file_id, chunk_no);
+                // Unregistering because there was a problem when backing up
+                ChunkBackupState.getInstance().unregisterBackup(file_id, chunk_no);
                 return;
             }
-
-            // Registering that the chunk was backed up successfully
-            ChunkBackupState.getInstance().registerBackup(file_id, chunk_no, replication_degree, body.length);
 
             final byte[] stored_message = MessageFactory.createStoredMessage(file_id, chunk_no);
 

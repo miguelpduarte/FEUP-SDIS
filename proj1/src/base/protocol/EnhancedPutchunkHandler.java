@@ -4,14 +4,12 @@ import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.channels.ChannelManager;
 import base.messages.MessageFactory;
-import base.messages.MessageWithChunkNo;
-import base.messages.MessageWithReplicationDegree;
+import base.messages.MessageWithChunkSize;
 import base.storage.StorageManager;
 import base.storage.stored.ChunkBackupState;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -23,16 +21,23 @@ public class EnhancedPutchunkHandler {
     private final int chunk_no;
     private final int replication_degree;
 
-    public EnhancedPutchunkHandler(MessageWithChunkNo info) throws IOException {
+    public EnhancedPutchunkHandler(MessageWithChunkSize info) throws IOException {
         this.file_id = info.getFileId();
         this.chunk_no = info.getChunkNo();
-        this.replication_degree = ((MessageWithReplicationDegree)info).getReplicationDegree();
+        this.replication_degree = info.getReplicationDegree();
+
+        // Registering that the chunk will be stored to ensure that the observed replication degree is correct (all STOREDs are taken into account even before the storage is finished)
+        // This is unregistered if any problem occurs when actually storing the chunk
+        ChunkBackupState.getInstance().registerBackup(file_id, chunk_no, replication_degree, info.getChunkSize());
+
         this.server_socket = new ServerSocket(0);
         // The timeout value is the maximum exponential backoff time delay used for retries in other subprotocols
         this.server_socket.setSoTimeout(ProtocolDefinitions.getMaxMessageDelay() * ProtocolDefinitions.SECOND_TO_MILIS);
         this.port = this.server_socket.getLocalPort();
+
         advertiseService();
         listenAndReply();
+
         System.out.println("Closing server socket");
         this.server_socket.close();
     }
@@ -54,19 +59,18 @@ public class EnhancedPutchunkHandler {
             final Socket connection = this.server_socket.accept();
             System.out.println("A connection was accepted!");
             ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
-            ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
-            // Using ObjectOutputStream because this ensures that the byte[] is read as an object (aka all at once)
+            // Using ObjectIntputStream because this ensures that the byte[] is read as an object (aka all at once)
             byte[] chunk_data = (byte[]) ois.readObject();
             System.out.printf("Receiving succesful! Now storing %d bytes!\n", chunk_data.length);
 
             if (!writeChunkToFile(chunk_data)) {
-                oos.writeBoolean(false);
                 System.out.println("Failed in writing chunk to file!");
+                // Unregistering because there was a problem when backing up
+                ChunkBackupState.getInstance().unregisterBackup(this.file_id, this.chunk_no);
                 return;
             }
 
             System.out.println("Wrote stuff to file");
-            oos.writeBoolean(true);
             connection.close();
 
             sendStored();
@@ -75,10 +79,13 @@ public class EnhancedPutchunkHandler {
         } catch (SocketTimeoutException e) {
             // Socket awaiting connection timed out
             System.out.println("Socket awaiting connection to receive timed out!");
-            return;
+            // Unregistering because there was a problem when backing up
+            ChunkBackupState.getInstance().unregisterBackup(this.file_id, this.chunk_no);
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("EnhancedPutchunkHandler.listenAndReply");
             e.printStackTrace();
+            // Unregistering because there was a problem when backing up
+            ChunkBackupState.getInstance().unregisterBackup(this.file_id, this.chunk_no);
         }
     }
 
@@ -87,9 +94,6 @@ public class EnhancedPutchunkHandler {
             System.out.printf("Storage of file id '%s' and chunk no '%d' was unsuccessful, aborting\n", file_id, chunk_no);
             return false;
         }
-
-        // Registering that the chunk was backed up successfully
-        ChunkBackupState.getInstance().registerBackup(file_id, chunk_no, replication_degree, chunk_data.length);
 
         System.out.printf("Stored file id '%s' - chunk no '%d' -> will prepare STORED message and broadcast it after a random delay\n", file_id, chunk_no);
         return true;

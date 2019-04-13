@@ -135,10 +135,9 @@ public class ControlChannelHandler extends ChannelHandler {
     }
 
     private void handleGetchunkEnh(CommonMessage info) {
-        System.out.println("ControlChannelHandler.handleGetchunkEnh");
         byte[] chunk_data = StorageManager.getInstance().getStoredChunk(info.getFileId(), ((MessageWithChunkNo) info).getChunkNo());
         if (chunk_data == null) {
-            System.out.println("Dont have the chunk");
+            System.out.println("Don't have the chunk");
             return;
         }
 
