@@ -17,8 +17,8 @@ public class FileDeletionLog implements Serializable {
     private FileDeletionLog() {
     }
 
-    public boolean hasFile(String file_id) {
-        return deletion_log.contains(file_id);
+    public boolean isEmpty() {
+        return this.deletion_log.isEmpty();
     }
 
     public void addFile(String file_id) {
@@ -26,6 +26,8 @@ public class FileDeletionLog implements Serializable {
     }
 
     public void joinLog(FileDeletionLog file_deletion_log) {
+        System.out.println("Received a log with size: " + file_deletion_log.deletion_log.size());
+
         deletion_log.putAll(file_deletion_log.deletion_log);
 
         // Delete files that are supposed to be deleted

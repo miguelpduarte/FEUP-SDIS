@@ -82,13 +82,16 @@ public class ControlChannelHandler extends ChannelHandler {
     }
 
     private void handleQueryDeleted(QueryDeletedMessage info, InetAddress address) {
+        if (FileDeletionLog.getInstance().isEmpty()) {
+            // Avoiding overriding non-empty logs that other peers might send
+            return;
+        }
         try (
                 Socket s = new Socket(address, info.getPort());
                 ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream())
         ) {
             oos.writeObject(FileDeletionLog.getInstance());
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignored) {
         }
     }
 

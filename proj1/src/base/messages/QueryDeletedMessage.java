@@ -15,13 +15,13 @@ public class QueryDeletedMessage extends CommonMessage {
 
         if (this.crlf_index + 4 > this.msg_length) {
             // Message can't have a single digit, space and CRLF so it does not have a PASV_PORT
-            throw new InvalidMessageFormatException("Missing PASV_PORT in PASVCHUNK message");
+            throw new InvalidMessageFormatException("Missing PORT in QUERYDELETE message");
         }
 
         int end_of_second_line_idx = MessageFactory.getCRLFIndex(this.message, this.msg_length, this.crlf_index + 1);
 
         if (end_of_second_line_idx == -1) {
-            throw new InvalidMessageFormatException("No second line found for expected PASVCHUNK message");
+            throw new InvalidMessageFormatException("No second line found for expected QUERYDELETE message");
         }
 
         String pasv_port_raw = new String(this.message, this.crlf_index + 2, end_of_second_line_idx - this.crlf_index - 2 - 1);

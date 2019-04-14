@@ -34,7 +34,7 @@ public class QueryDeletedHandler {
                 } catch (IOException e) {
                     System.out.println("Error when advertising TCP Init service");
                 }
-            }, ProtocolDefinitions.getRandomMessageDelayMilis() + 1);
+            }, ProtocolDefinitions.getRandomMessageDelayMilis());
     }
 
     private void listenAndReply() {
@@ -43,7 +43,7 @@ public class QueryDeletedHandler {
             // Using ObjectOutputStream because this ensures that the byte[] is written as an object (aka all at once)
             ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
             FileDeletionLog file_deletion_log = (FileDeletionLog) ois.readObject();
-            System.out.println("Received deletion log from another peer.");
+            // System.out.println("Received deletion log from another peer.");
             FileDeletionLog.getInstance().joinLog(file_deletion_log);
             connection.close();
             System.out.println("Success in TCP Init protocol!");
