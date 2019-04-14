@@ -137,8 +137,6 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
         new RestoreSubprotocol(file_name, file_id, false);
 
-        // TaskManager.getInstance().registerTask(new RestoreTask(file_id, file_name));
-
         return 0;
     }
 
@@ -166,8 +164,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             return -1;
         }
 
-        System.out.println("NOT LAUNCHING LMAOOOO"); // TODO ayyy
-        // TaskManager.getInstance().registerTask(new EnhancedRestoreTask(file_id, file_name));
+        new RestoreSubprotocol(file_name, file_id, true);
 
         return 0;
     }
@@ -187,7 +184,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             return -1;
         }
 
-        TaskManager.getInstance().registerTask(new DeleteTask(file_id));
+        final DeleteTask t = new DeleteTask(file_id);
+        TaskManager.getInstance().registerTask(t);
+        t.start();
         // Also deleting own files if they exist
         StorageManager.getInstance().removeFileChunksIfStored(file_id);
         RequestedBackupsState.getInstance().unregisterRequestedFile(file_id);
@@ -226,7 +225,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
                         System.err.printf("Error in removing chunk for file_id '%s' and no '%d'\n", candidate_chunk.getFileId(), candidate_chunk.getChunkNo());
                     } else {
                         // Start broadcasting that the chunk was removed
-                        TaskManager.getInstance().registerTask(new RemovedTask(candidate_chunk.getFileId(), candidate_chunk.getChunkNo()));
+                        final RemovedTask t = new RemovedTask(candidate_chunk.getFileId(), candidate_chunk.getChunkNo());
+                        TaskManager.getInstance().registerTask(t);
+                        t.start();
                     }
 
                     candidate_idx++;

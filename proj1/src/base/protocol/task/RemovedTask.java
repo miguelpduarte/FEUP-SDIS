@@ -10,10 +10,10 @@ public class RemovedTask extends Task {
     private final int chunk_no;
 
     public RemovedTask(String file_id, int chunk_no) {
-        super(file_id);
+        // This task doesn't need to retry sending
+        super(file_id, false);
         this.chunk_no = chunk_no;
         prepareMessage();
-        startCommuncation();
     }
 
     @Override

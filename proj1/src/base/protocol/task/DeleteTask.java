@@ -8,9 +8,9 @@ import base.protocol.task.extendable.Task;
 
 public class DeleteTask extends Task {
     public DeleteTask(String file_id) {
-        super(file_id);
+        // This task doesn't need to retry sending
+        super(file_id, false);
         prepareMessage();
-        startCommuncation();
     }
 
     @Override

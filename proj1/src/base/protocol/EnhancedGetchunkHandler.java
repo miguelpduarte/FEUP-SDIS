@@ -28,15 +28,15 @@ public class EnhancedGetchunkHandler {
         this.server_socket.setSoTimeout(ProtocolDefinitions.getMaxMessageDelay() * ProtocolDefinitions.SECOND_TO_MILIS);
         this.port = this.server_socket.getLocalPort();
         advertiseService();
-        listenAndReply();
-        this.server_socket.close();
     }
 
     private void advertiseService() {
+        final byte[] message = MessageFactory.createPasvChunkMessage(this.file_id, this.chunk_no, this.port);
         ThreadManager.getInstance().executeLaterMilis(() -> {
-            final byte[] message = MessageFactory.createPasvChunkMessage(this.file_id, this.chunk_no, this.port);
             try {
                 ChannelManager.getInstance().getControl().broadcast(message);
+                listenAndReply();
+                this.server_socket.close();
             } catch (IOException e) {
                 System.out.println("Error when advertising TCP Restore service");
             }

@@ -65,7 +65,9 @@ public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserv
 
         // Unregistering file from requested backups
         RequestedBackupsState.getInstance().unregisterRequestedFile(this.file_id);
-        TaskManager.getInstance().registerTask(new DeleteTask(this.file_id));
+        final DeleteTask t = new DeleteTask(this.file_id);
+        TaskManager.getInstance().registerTask(t);
+        t.start();
         FileIdMapper.getInstance().removeFile(this.file_name);
 
         System.out.println("All tasks stopped.");
@@ -142,6 +144,7 @@ public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserv
         TaskManager.getInstance().registerTask(ot);
         RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).registerChunk(new RequestedBackupFileChunk(file_id, last_running_chunk_no, replication_degree));
         this.running_tasks.put(last_running_chunk_no, ot);
+        ot.start();
 
         this.incrementLastRunningChunkNo();
     }

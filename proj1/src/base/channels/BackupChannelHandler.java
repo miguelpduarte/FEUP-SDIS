@@ -39,6 +39,22 @@ public class BackupChannelHandler extends ChannelHandler {
 
                 if (info.getSenderId().equals(ProtocolDefinitions.SERVER_ID)) {
                     // Own Message, ignoring
+                    // Unless it is a PUTCHUNK request, which then we will reply with STORED if the file is stored to ensure that the network has a correct observed replication degree
+                    if (info.getMessageType() == ProtocolDefinitions.MessageType.PUTCHUNK) {
+                        MessageWithChunkNo mwcn = (MessageWithChunkNo) info;
+                        final String file_id = mwcn.getFileId();
+                        final int chunk_no = mwcn.getChunkNo();
+                        if (StorageManager.getInstance().hasChunk(file_id, chunk_no)) {
+                            final byte[] stored_message = MessageFactory.createStoredMessage(file_id, chunk_no);
+                            ThreadManager.getInstance().executeLaterMilis(() -> {
+                                try {
+                                    ChannelManager.getInstance().getControl().broadcast(stored_message);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }, ProtocolDefinitions.getRandomMessageDelayMilis());
+                        }
+                    }
                     return;
                 }
 

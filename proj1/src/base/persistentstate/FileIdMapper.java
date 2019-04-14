@@ -28,7 +28,9 @@ public class FileIdMapper {
 
         if (old_file_id != null) {
             System.out.println("New version for file received, deleting previous file_id from network and local storage.");
-            TaskManager.getInstance().registerTask(new DeleteTask(old_file_id));
+            final DeleteTask t = new DeleteTask(old_file_id);
+            TaskManager.getInstance().registerTask(t);
+            t.start();
             // Also deleting own files if they exist
             StorageManager.getInstance().removeFileChunksIfStored(old_file_id);
             RequestedBackupsState.getInstance().unregisterRequestedFile(old_file_id);

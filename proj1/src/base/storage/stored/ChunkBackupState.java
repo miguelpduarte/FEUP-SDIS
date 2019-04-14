@@ -29,7 +29,11 @@ public class ChunkBackupState implements Serializable {
     private static final ChunkBackupInfo null_chunk_backup_info = new NullChunkBackupInfo();
 
     public void registerBackup(String file_id, int chunk_no, int replication_degree, int size_bytes) {
-        this.backed_up_chunks_info.put(ProtocolDefinitions.calcChunkHash(file_id, chunk_no), new ChunkBackupInfo(file_id, chunk_no, replication_degree, size_bytes));
+        final String map_key = ProtocolDefinitions.calcChunkHash(file_id, chunk_no);
+        if (this.backed_up_chunks_info.containsKey(map_key)) {
+            return;
+        }
+        this.backed_up_chunks_info.put(map_key, new ChunkBackupInfo(file_id, chunk_no, replication_degree, size_bytes));
     }
 
     public ChunkBackupInfo getChunkBackupInfo(String file_id, int chunk_no) {

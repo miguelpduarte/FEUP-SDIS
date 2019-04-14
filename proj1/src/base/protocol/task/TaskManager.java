@@ -29,8 +29,4 @@ public class TaskManager {
         tasks.remove(k.toKey());
     }
 
-    public void rekeyTask(Task t) {
-        this.unregisterTask(t);
-        this.registerTask(t);
-    }
 }

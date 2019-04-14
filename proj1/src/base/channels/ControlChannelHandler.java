@@ -89,8 +89,7 @@ public class ControlChannelHandler extends ChannelHandler {
     private void handlePasvChunk(MessageWithPasvPort info, InetAddress address) {
         final Task t = TaskManager.getInstance().getTask(info);
         if (t != null) {
-            // ((EnhancedRestoreTask) t).notify(info, address); // TODO limão
-            System.out.println("help me jeebus");
+            ((EnhancedGetchunkTask) t).notify(info, address);
         }
     }
 
@@ -118,7 +117,9 @@ public class ControlChannelHandler extends ChannelHandler {
             Future f = ThreadManager.getInstance().executeLaterMilis(() -> {
                 try {
                     // Start PUTCHUNK sub-protocol for this chunk
-                    TaskManager.getInstance().registerTask(new PutchunkTask(file_id, chunk_no, replication_degree, chunk_data));
+                    final PutchunkTask t = new PutchunkTask(file_id, chunk_no, replication_degree, chunk_data, true);
+                    TaskManager.getInstance().registerTask(t);
+                    t.start();
                 } catch (Exception e) {
                     System.out.println("In REMOVED recovery");
                     e.printStackTrace();

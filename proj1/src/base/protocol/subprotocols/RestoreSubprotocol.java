@@ -1,12 +1,12 @@
 package base.protocol.subprotocols;
 
 import base.protocol.SynchronizedRunner;
+import base.protocol.task.EnhancedGetchunkTask;
 import base.protocol.task.GetchunkTask;
 import base.protocol.task.TaskManager;
 import base.protocol.task.extendable.ITaskObserver;
 import base.protocol.task.extendable.ObservableTask;
 import base.protocol.task.extendable.Task;
-import base.storage.Restorer;
 import base.storage.requested.RequestedBackupsState;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +22,6 @@ public class RestoreSubprotocol extends SynchronizedRunner implements ITaskObser
     // Access to these fields must be synchronized
     private int last_running_chunk_no = 0;
     private int n_restored = 0;
-    // private final Restorer restorer;
 
     public RestoreSubprotocol(String file_name, String file_id, boolean is_enhanced_version) {
         this.file_name = file_name;
@@ -31,16 +30,7 @@ public class RestoreSubprotocol extends SynchronizedRunner implements ITaskObser
 
         this.last_chunk_no = RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id).getNrChunks();
 
-        // this.restorer = initRestorer();
         launchInitialTasks();
-    }
-
-    private Restorer initRestorer() {
-        return new Restorer(this.file_name, this.file_id, this.last_chunk_no);
-    }
-
-    private void haltRestorer() {
-        // restorer.haltWriter();
     }
 
     private synchronized int getLastRunningChunkNo() {
@@ -131,15 +121,16 @@ public class RestoreSubprotocol extends SynchronizedRunner implements ITaskObser
 
         System.out.printf("-->Launching restore task for chunk_no %03d. #Running tasks: %03d\n", last_running_chunk_no, this.running_tasks.size());
 
-        ObservableTask ot = null;
+        ObservableTask ot;
         if (this.is_enhanced_version) {
-            //ot = new EnhancedGetchunkTask(file_id, last_running_chunk_no);
+            ot = new EnhancedGetchunkTask(file_id, file_name, last_running_chunk_no);
         } else {
             ot = new GetchunkTask(file_id, file_name, last_running_chunk_no);
         }
         ot.observe(this);
         TaskManager.getInstance().registerTask(ot);
         this.running_tasks.put(last_running_chunk_no, ot);
+        ot.start();
 
         this.incrementLastRunningChunkNo();
     }
