@@ -57,11 +57,7 @@ public class FileDeletionLog implements Serializable {
                 ObjectInputStream ois = new ObjectInputStream(fis)
         ) {
             instance = (FileDeletionLog) ois.readObject();
-            System.out.printf("Done reading file deletion log from disk, containing %d items:\n", instance.deletion_log.size());
-            for (String s : instance.deletion_log.keySet()) {
-                System.out.println(s);
-            }
-            System.out.println("\n");
+            System.out.printf("Done reading file deletion log from disk, containing %d items.\n", instance.deletion_log.size());
         } catch (Exception ignored) {
         }
     }
