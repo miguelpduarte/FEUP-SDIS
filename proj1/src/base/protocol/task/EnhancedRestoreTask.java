@@ -1,9 +1,9 @@
+/*
 package base.protocol.task;
 
 import base.ProtocolDefinitions;
 import base.messages.MessageFactory;
 import base.messages.MessageWithPasvPort;
-import base.storage.RestoreManager;
 import base.storage.Restorer;
 
 import java.io.IOException;
@@ -94,3 +94,4 @@ public class EnhancedRestoreTask extends RestoreTask {
         return ProtocolDefinitions.MessageType.PASVCHUNK.name() + file_id + this.getChunkNo();
     }
 }
+*/

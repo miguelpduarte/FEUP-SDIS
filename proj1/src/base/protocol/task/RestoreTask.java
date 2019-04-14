@@ -1,3 +1,4 @@
+/*
 package base.protocol.task;
 
 import base.ProtocolDefinitions;
@@ -8,7 +9,6 @@ import base.messages.InvalidMessageFormatException;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
 import base.protocol.task.extendable.Task;
-import base.storage.RestoreManager;
 import base.storage.Restorer;
 
 public class RestoreTask extends Task {
@@ -110,3 +110,4 @@ public class RestoreTask extends Task {
         return ChannelManager.getInstance().getControl();
     }
 }
+*/

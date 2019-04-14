@@ -7,6 +7,7 @@ import base.channels.RestoreChannelHandler;
 import base.messages.MessageFactory;
 import base.persistentstate.FileIdMapper;
 import base.protocol.subprotocols.BackupSubprotocol;
+import base.protocol.subprotocols.RestoreSubprotocol;
 import base.protocol.task.*;
 import base.storage.StorageManager;
 import base.storage.requested.NullRequestedBackupFile;
@@ -134,7 +135,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             return -1;
         }
 
-        TaskManager.getInstance().registerTask(new RestoreTask(file_id, file_name));
+        new RestoreSubprotocol(file_name, file_id, false);
+
+        // TaskManager.getInstance().registerTask(new RestoreTask(file_id, file_name));
 
         return 0;
     }
@@ -163,7 +166,8 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             return -1;
         }
 
-        TaskManager.getInstance().registerTask(new EnhancedRestoreTask(file_id, file_name));
+        System.out.println("NOT LAUNCHING LMAOOOO"); // TODO ayyy
+        // TaskManager.getInstance().registerTask(new EnhancedRestoreTask(file_id, file_name));
 
         return 0;
     }
