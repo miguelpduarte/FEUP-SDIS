@@ -89,11 +89,6 @@ public abstract class Task extends SynchronizedRunner implements Keyable {
             return;
         }
 
-//        if (this.next_action != null && !this.next_action.isCancelled()) {
-//            System.out.println("Next action not cancelled yet, not launching a new one!"); // TODO REMOVE? handling repeated calls (?)
-//            return;
-//        }
-
         if (this.getCurrentAttempt() >= ProtocolDefinitions.MESSAGE_DELAYS.length) {
             this.handleMaxRetriesReached();
             return;

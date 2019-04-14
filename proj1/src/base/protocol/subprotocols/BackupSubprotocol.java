@@ -98,10 +98,10 @@ public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserv
     }
 
     private static final int PROGRESS_BAR_SIZE = 20;
-    protected void displayProgressBar(double nr_backed_up_chunks) {
-        final int progress = (int) ((nr_backed_up_chunks / this.last_chunk_no) * PROGRESS_BAR_SIZE);
+    protected void displayProgressBar(int nr_backed_up_chunks) {
+        final int progress = (int) (((double)nr_backed_up_chunks / this.last_chunk_no) * PROGRESS_BAR_SIZE);
 
-        System.out.print("Backup Progress: ");
+        System.out.printf("Backup Progress: (%05d/%05d)", nr_backed_up_chunks, this.last_chunk_no);
         int i = 0;
         for (; i < progress; ++i) {
             System.out.print("=");
