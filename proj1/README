@@ -27,3 +27,8 @@ To launch 5 peers in the enhanced mode, killing the previously running peer proc
     ./start_peers.sh -k -r 5
 Afterwards, to have Peer 1 run an enhanced backup for the file "test.txt" with a replication degree of 3:
     ./run.sh Peer-1 BACKUPENH test.txt 3
+
+
+Notes:
+In order to run the project, a Java version of 8 or higher is necessary.
+In order to build the project, the jdk bundled version of javac can be used.
