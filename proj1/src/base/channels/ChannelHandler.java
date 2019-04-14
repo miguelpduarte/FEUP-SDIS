@@ -43,9 +43,8 @@ public abstract class ChannelHandler implements Runnable {
     protected abstract void handle(DatagramPacket dp);
 
     public void broadcast(byte[] message) {
-        DatagramPacket broadcast_packet = null;
         try {
-            broadcast_packet = new DatagramPacket(message, message.length, InetAddress.getByName(this.hostname), this.port);
+            DatagramPacket broadcast_packet = new DatagramPacket(message, message.length, InetAddress.getByName(this.hostname), this.port);
             this.channel_socket.send(broadcast_packet);
         } catch (UnknownHostException e) {
             e.printStackTrace();
