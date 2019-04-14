@@ -46,7 +46,7 @@ public class QueryDeletedHandler {
             System.out.println("Success in TCP Init protocol!");
         } catch (SocketTimeoutException e) {
             // Socket awaiting connection timed out
-            System.out.println("Socket awaiting connection timed out!");
+            System.out.println("No deletion log received from other peers.");
             return;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
