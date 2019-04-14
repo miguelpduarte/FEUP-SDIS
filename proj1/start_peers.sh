@@ -36,7 +36,7 @@ while [[ $# > 0 ]]; do
         fi
         shift
 	;;
-	"-kill" | "-k")
+	"--kill" | "-k")
 	    echo "Killing the previously running peers"
 	    # (assumes that both shell scripts are in the same directory)
         sh "$FULL_PATH/kill_peers.sh"
