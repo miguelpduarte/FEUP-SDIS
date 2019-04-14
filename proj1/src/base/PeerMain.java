@@ -1,5 +1,6 @@
 package base;
 
+import base.persistentstate.FileDeletionLog;
 import base.persistentstate.FileIdMapper;
 import base.persistentstate.ShutdownAndStartupHandler;
 import base.storage.StorageManager;
@@ -61,6 +62,10 @@ public class PeerMain {
         ShutdownAndStartupHandler.installShutdownHook();
         ShutdownAndStartupHandler.startPeriodicBackupService();
 
+        // Read file id map from disk
         FileIdMapper.getInstance().readMapFromDisk();
+
+        // Read file deletion log from disk
+        FileDeletionLog.getInstance().readLogFromDisk();
     }
 }
