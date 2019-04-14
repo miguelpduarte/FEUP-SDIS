@@ -55,7 +55,7 @@ public class RestoreTask extends Task {
         try {
             byte[] msg_body = msg.getBody();
             // Interrupt the next GETCHUNK messages
-            this.cancelCommunication();
+            this.pauseCommunication();
             Restorer r = RestoreManager.getInstance().getRestorer(() -> this.file_id);
 
             assert r != null;
@@ -68,11 +68,13 @@ public class RestoreTask extends Task {
             } else {
                 r.addChunk(msg_body, this.getChunkNo());
                 // Still have more chunks, increment chunk_no and reset number of retries.
-                // Then, re-key the task (to receive the correct messages), re-generate the message and restart communication
+                // Then, re-key the task (to receive the correct messages), re-generate the message and resume communication (will start from the original first delay)
                 this.incrementChunkNo();
                 this.resetAttemptNumber();
                 TaskManager.getInstance().rekeyTask(this);
                 this.prepareMessage();
+                // Done explicitly since it is only relevant for this case (and this will be TODO refactored)
+                this.resumeCommuncation();
                 this.startCommuncation();
             }
         } catch (InvalidMessageFormatException ignored) {

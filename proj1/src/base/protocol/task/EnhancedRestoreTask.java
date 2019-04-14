@@ -33,7 +33,7 @@ public class EnhancedRestoreTask extends RestoreTask {
 
         System.out.printf("Now processing PASVCHUNK for %s and %d\n", this.file_id, this.getChunkNo());
 
-        this.cancelCommunication();
+        this.pauseCommunication();
 
         try (Socket s = new Socket(address, msg.getPasvPort()); ObjectInputStream ois = new ObjectInputStream(s.getInputStream())) {
             byte[] chunk_data = (byte[]) ois.readObject();
@@ -48,7 +48,6 @@ public class EnhancedRestoreTask extends RestoreTask {
                 r.addChunk(chunk_data, this.getChunkNo());
                 System.out.println("a");
                 this.incrementChunkNo();
-                return;
             } else {
                 r.addChunk(chunk_data, this.getChunkNo());
                 // Still have more chunks, increment chunk_no and reset number of retries.
@@ -58,6 +57,9 @@ public class EnhancedRestoreTask extends RestoreTask {
                 TaskManager.getInstance().rekeyTask(this);
                 this.prepareMessage();
                 System.out.println("b");
+                // Done explicitly since it is only relevant for this case (and this will be TODO refactored)
+                this.resumeCommuncation();
+                this.startCommuncation();
             }
         } catch (IOException e) {
             System.out.println("ControlChannelHandler.handlePasvChunk :c");
@@ -66,7 +68,6 @@ public class EnhancedRestoreTask extends RestoreTask {
             e.printStackTrace();
         }
 
-        this.startCommuncation();
     }
 
     @Override

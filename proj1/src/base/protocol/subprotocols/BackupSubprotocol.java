@@ -1,5 +1,6 @@
 package base.protocol.subprotocols;
 
+import base.protocol.SynchronizedRunner;
 import base.protocol.task.EnhancedPutchunkTask;
 import base.protocol.task.PutchunkTask;
 import base.protocol.task.TaskManager;
@@ -11,7 +12,7 @@ import base.storage.requested.RequestedBackupsState;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BackupSubprotocol implements ITaskObserver {
+public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserver {
     private static final int MAX_RUNNING_PUTCHUNK_TASKS = 10;
 
     private final String file_id;
@@ -62,15 +63,21 @@ public class BackupSubprotocol implements ITaskObserver {
         RequestedBackupsState.getInstance().unregisterRequestedFile(this.file_id);
 
         System.out.println("All tasks stopped.");
-        System.out.printf("Backup of file with id %s unsuccessful. Running tasks terminated and process aborted.\n", this.file_id);
+        System.out.printf("-->Backup of file with id %s unsuccessful. Running tasks terminated and process aborted.\n", this.file_id);
 
         // TODO Launch delete subprotocol for this file_id
     }
 
     @Override
     public void notifyEnd(boolean success, int task_id) {
+        if (!this.isRunning()) {
+            System.out.println("Subprotocol no longer running"); // TODO remove
+            return;
+        }
+
         if (!success) {
             System.out.printf("Task for chunk %d was not successful.\n", task_id);
+            this.stopRunning();
             this.stopAllTasks();
         } else {
             // Task was successful
@@ -81,6 +88,7 @@ public class BackupSubprotocol implements ITaskObserver {
 
             if (nr_backed_up_chunks == this.last_chunk_no) {
                 System.out.printf("-->File with id %s successfully backed up!!!\n", this.file_id);
+                this.stopRunning();
                 return;
             }
             // (This task is no longer being executed)
@@ -89,10 +97,11 @@ public class BackupSubprotocol implements ITaskObserver {
         }
     }
 
+    private static final int PROGRESS_BAR_SIZE = 20;
     protected void displayProgressBar(double nr_backed_up_chunks) {
-        final int progress = (int) ((nr_backed_up_chunks / this.last_chunk_no) * 20);
+        final int progress = (int) ((nr_backed_up_chunks / this.last_chunk_no) * PROGRESS_BAR_SIZE);
 
-        System.out.print("Progress: ");
+        System.out.print("Backup Progress: ");
         int i = 0;
         for (; i < progress; ++i) {
             System.out.print("=");

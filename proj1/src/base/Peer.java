@@ -10,7 +10,6 @@ import base.protocol.task.*;
 import base.storage.StorageManager;
 import base.storage.requested.NullRequestedBackupFile;
 import base.storage.requested.RequestedBackupFile;
-import base.storage.requested.RequestedBackupFileChunk;
 import base.storage.requested.RequestedBackupsState;
 import base.storage.stored.ChunkBackupInfo;
 import base.storage.stored.ChunkBackupState;
@@ -56,7 +55,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
     @Override
     public int backup(String file_path, int replication_factor) {
-        System.out.println("Peer.backup");
+        System.out.println("##>>>Peer.backup");
         System.out.println("file_path = [" + file_path + "], replication_factor = [" + replication_factor + "]");
 
         final String file_name = new File(file_path).getName();
@@ -93,7 +92,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             return -1;
         }
 
-        System.out.println("Peer.backupEnhanced");
+        System.out.println("##>>>Peer.backupEnhanced");
         System.out.println("file_path = [" + file_path + "], replication_factor = [" + replication_factor + "]");
 
         final String file_name = new File(file_path).getName();
@@ -124,7 +123,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
     @Override
     public int restore(String file_path) {
-        System.out.println("Peer.restore");
+        System.out.println("##>>>Peer.restore");
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();
@@ -147,7 +146,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
             return -1;
         }
 
-        System.out.println("Peer.restoreEnhanced");
+        System.out.println("##>>>Peer.restoreEnhanced");
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();
@@ -166,7 +165,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
     @Override
     public int delete(String file_path) {
-        System.out.println("Peer.delete");
+        System.out.println("##>>>Peer.delete");
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();
@@ -182,7 +181,7 @@ public class Peer extends UnicastRemoteObject implements IPeer {
 
     @Override
     public int setMaxDiskSpace(int disk_space_kbs) {
-        System.out.println("Peer.setMaxDiskSpace");
+        System.out.println("##>>>Peer.setMaxDiskSpace");
         System.out.println("disk_space_kbs = [" + disk_space_kbs + "]");
 
         try {

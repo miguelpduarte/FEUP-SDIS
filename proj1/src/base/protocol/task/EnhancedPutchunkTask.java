@@ -19,7 +19,10 @@ public class EnhancedPutchunkTask extends PutchunkTask {
 
     @Override
     protected void handleMaxRetriesReached() {
-        this.unregister();
+        // TODO check what works
+        // this.unregister();
+        // or
+        this.stopRunning();
         System.out.printf("Maximum retries reached for EnhancedPutchunkTask for fileid '%s' and chunk_no '%d'\n", this.file_id, this.chunk_no);
         this.notifyObserver(false);
     }
@@ -66,7 +69,7 @@ public class EnhancedPutchunkTask extends PutchunkTask {
 
         // Entering into protocol processing for a certain peer
 
-        this.cancelCommunication();
+        this.pauseCommunication();
 
         // Connecting to the remote peer
         // System.out.println("Connecting to: " + address + ":" + msg.getPasvPort());
@@ -80,18 +83,23 @@ public class EnhancedPutchunkTask extends PutchunkTask {
 
             if (this.replicators.size() >= this.replication_deg) {
                 System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of '%d'\n", this.chunk_no, this.file_id, this.replication_deg);
-                this.unregister();
+
+                // TODO check what works
+                // this.unregister();
+                // or
+                this.stopRunning();
+
                 // Success!
                 this.notifyObserver(true);
                 return;
             }
 
             // Resuming communication as the desired replication was not yet reached
-            this.startCommuncation();
+            this.resumeCommuncation();
         } catch (IOException e) {
             e.printStackTrace();
             // Failure, resume communication
-            this.startCommuncation();
+            this.resumeCommuncation();
         }
     }
 }
