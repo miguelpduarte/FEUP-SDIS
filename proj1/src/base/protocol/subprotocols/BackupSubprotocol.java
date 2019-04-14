@@ -1,12 +1,15 @@
 package base.protocol.subprotocols;
 
+import base.persistentstate.FileIdMapper;
 import base.protocol.SynchronizedRunner;
+import base.protocol.task.DeleteTask;
 import base.protocol.task.EnhancedPutchunkTask;
 import base.protocol.task.PutchunkTask;
 import base.protocol.task.TaskManager;
 import base.protocol.task.extendable.ITaskObserver;
 import base.protocol.task.extendable.ObservableTask;
 import base.protocol.task.extendable.Task;
+import base.storage.StorageManager;
 import base.storage.requested.RequestedBackupFileChunk;
 import base.storage.requested.RequestedBackupsState;
 
@@ -15,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserver {
     private static final int MAX_RUNNING_PUTCHUNK_TASKS = 10;
 
+    private final String file_name;
     private final String file_id;
     private final int replication_degree;
     private final byte[][] chunks_data;
@@ -25,7 +29,8 @@ public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserv
     private int last_running_chunk_no;
     private int n_backed_up;
 
-    public BackupSubprotocol(String file_id, int replication_degree, byte[][] chunks_data, boolean is_enhanced_version) {
+    public BackupSubprotocol(String file_name, String file_id, int replication_degree, byte[][] chunks_data, boolean is_enhanced_version) {
+        this.file_name = file_name;
         this.file_id = file_id;
         this.replication_degree = replication_degree;
         this.chunks_data = chunks_data;
@@ -61,11 +66,11 @@ public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserv
 
         // Unregistering file from requested backups
         RequestedBackupsState.getInstance().unregisterRequestedFile(this.file_id);
+        TaskManager.getInstance().registerTask(new DeleteTask(this.file_id));
+        FileIdMapper.getInstance().removeFile(this.file_name);
 
         System.out.println("All tasks stopped.");
-        System.out.printf("-->Backup of file with id %s unsuccessful. Running tasks terminated and process aborted.\n", this.file_id);
-
-        // TODO Launch delete subprotocol for this file_id
+        System.out.printf("-->Backup of file with id %s unsuccessful. Running tasks terminated, process aborted and Delete subprotocol launched to remove partial backup.\n", this.file_id);
     }
 
     @Override

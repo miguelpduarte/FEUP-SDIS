@@ -19,9 +19,6 @@ public class EnhancedPutchunkTask extends PutchunkTask {
 
     @Override
     protected void handleMaxRetriesReached() {
-        // TODO check what works
-        // this.unregister();
-        // or
         this.stopRunning();
         System.out.printf("Maximum retries reached for EnhancedPutchunkTask for fileid '%s' and chunk_no '%d'\n", this.file_id, this.chunk_no);
         this.notifyObserver(false);
@@ -84,9 +81,6 @@ public class EnhancedPutchunkTask extends PutchunkTask {
             if (this.replicators.size() >= this.replication_deg) {
                 System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of '%d'\n", this.chunk_no, this.file_id, this.replication_deg);
 
-                // TODO check what works
-                // this.unregister();
-                // or
                 this.stopRunning();
 
                 // Success!

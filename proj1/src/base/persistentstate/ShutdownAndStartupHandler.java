@@ -28,7 +28,7 @@ public class ShutdownAndStartupHandler {
     public static void installShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
-                ShutdownAndStartupHandler.backup();
+                backup();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -52,6 +52,8 @@ public class ShutdownAndStartupHandler {
     }
 
     private static void backup() throws IOException {
+        FileIdMapper.getInstance().writeMapToDisk();
+
         try (
                 FileOutputStream fos = new FileOutputStream(StorageManager.getInstance().getChunkBackupInformationPath());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)

@@ -1,6 +1,9 @@
 package base.persistentstate;
 
+import base.protocol.task.DeleteTask;
+import base.protocol.task.TaskManager;
 import base.storage.StorageManager;
+import base.storage.requested.RequestedBackupsState;
 
 import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,19 +24,22 @@ public class FileIdMapper {
     }
 
     public void putFile(String file_name, String file_id) {
-        if (file_id_map.contains(file_name)) {
-            file_id_map.remove(file_name);
+        String old_file_id = file_id_map.put(file_name, file_id);
+
+        if (old_file_id != null) {
+            System.out.println("New version for file received, deleting previous file_id from network and local storage.");
+            TaskManager.getInstance().registerTask(new DeleteTask(old_file_id));
+            // Also deleting own files if they exist
+            StorageManager.getInstance().removeFileChunksIfStored(old_file_id);
+            RequestedBackupsState.getInstance().unregisterRequestedFile(old_file_id);
         }
-        file_id_map.put(file_name, file_id);
-        writeMapInDisk();
     }
 
     public void removeFile(String file_name) {
         file_id_map.remove(file_name);
-        writeMapInDisk();
     }
 
-    private void writeMapInDisk() {
+    public void writeMapToDisk() {
         try (
                 FileOutputStream fos = new FileOutputStream(StorageManager.getInstance().getFileIdMapPath());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)
@@ -53,8 +59,7 @@ public class FileIdMapper {
                 FileInputStream fis = new FileInputStream(StorageManager.getInstance().getFileIdMapPath());
                 ObjectInputStream ois = new ObjectInputStream(fis)
         ) {
-            ConcurrentHashMap<String, String> new_file_id_map = (ConcurrentHashMap<String, String>) ois.readObject();
-            this.file_id_map = new_file_id_map;
+            this.file_id_map = (ConcurrentHashMap<String, String>) ois.readObject();
             System.out.printf("Done reading file id map from disk, containing %d items.\n", this.file_id_map.size());
         } catch (Exception ignored) {
         }

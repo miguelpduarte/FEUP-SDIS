@@ -112,8 +112,8 @@ public abstract class Task extends SynchronizedRunner implements Keyable {
             System.out.println("Cancelling non-running communication");
             return;
         }
-        this.setIsCommunicating(false);
         this.next_action.cancel(true);
+        this.setIsCommunicating(false);
     }
 
     protected abstract void printSendingMessage();
