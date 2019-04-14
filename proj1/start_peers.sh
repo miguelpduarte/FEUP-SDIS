@@ -58,11 +58,16 @@ while [[ $# > 0 ]]; do
 	    echo "Starting in the basic protocol version (1.0)"
 	    PROTOCOL_VERSION=$BASIC_PROTOCOL_VERSION
 	    shift
-	    ;;
+    ;;
+	"-r" | "--remove") # TODO
+	    echo "Removing previous peer files"
+	    rm -rf "$FULL_PATH"/peer*
+	    shift
+	;;
     *)
         if ! [[ $1 =~ $NUMBER_REGEX ]]; then
             echo "Error: The number of peers must be a positive integer!"
-            echo "Usage: $0 n_peers [--tile|-t [n_cols]] [--kill|-k] [-s|--start-id start_id]"
+            echo "Usage: $0 n_peers [--tile|-t [n_cols]] [--kill|-k] [-s|--start-id start_id] [-r | --remove]"
             echo "(Note: Tiling options require i3wm)"
             exit 1
         else
@@ -73,6 +78,13 @@ while [[ $# > 0 ]]; do
 	;;
     esac
 done
+
+if [[ -z ${N_PEERS+x} ]]; then
+    echo "Error: No number of peers specified!"
+    echo "Usage: $0 n_peers [--tile|-t [n_cols]] [--kill|-k] [-s|--start-id start_id] [-r | --remove]"
+    echo "(Note: Tiling options require i3wm)"
+    exit 1
+fi
 
 echo "Starting with id ${PEER_START_ID+0}";
 
