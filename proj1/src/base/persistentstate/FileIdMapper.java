@@ -28,6 +28,11 @@ public class FileIdMapper {
         writeMapInDisk();
     }
 
+    public void removeFile(String file_name) {
+        file_id_map.remove(file_name);
+        writeMapInDisk();
+    }
+
     private void writeMapInDisk() {
         try (
                 FileOutputStream fos = new FileOutputStream(StorageManager.getInstance().getFileIdMapPath());

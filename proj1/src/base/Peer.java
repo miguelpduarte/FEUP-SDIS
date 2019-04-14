@@ -219,6 +219,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         StorageManager.getInstance().removeFileChunksIfStored(MessageFactory.filenameEncode(file_name));
         RequestedBackupsState.getInstance().unregisterRequestedFile(file_id);
 
+        // Remove the file_name -> file_id entry from the file id map
+        FileIdMapper.getInstance().removeFile(file_name);
+
         return 0;
     }
 
