@@ -215,7 +215,6 @@ public class StorageManager {
 
         // If the directory exists, we have stored chunks - must delete them individually and then delete the directory itself
         // Must not forget to unregister from the ConcurrentHashMap
-        // TODO: Maybe fix verboseness
         for (File chunk : Objects.requireNonNull(file_backup_dir.listFiles())) {
             // Space was freed so the used space is updated
             this.updateOccupiedSpace(-1 * (int) chunk.length());

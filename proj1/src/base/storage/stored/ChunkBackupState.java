@@ -63,7 +63,6 @@ public class ChunkBackupState implements Serializable {
         final Stream<ChunkBackupInfo> overReplicated = this.backed_up_chunks_info.values()
                 .stream()
                 .filter(ChunkBackupInfo::isOverReplicated)
-                // TODO: Add secondary sorting criteria to resolve ties?
                 // Sorting by the difference between the desired and perceived replication degree
                 .sorted(Comparator.comparingInt(ChunkBackupInfo::getDiffToDesiredReplicationDegree).reversed());
 

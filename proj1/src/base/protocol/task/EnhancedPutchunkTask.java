@@ -69,14 +69,11 @@ public class EnhancedPutchunkTask extends PutchunkTask {
         this.pauseCommunication();
 
         // Connecting to the remote peer
-        // System.out.println("Connecting to: " + address + ":" + msg.getPasvPort());
         try (Socket s = new Socket(address, msg.getPasvPort())) {
             ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
             oos.writeObject(this.body);
-            // TODO Remove DBG prints
             this.replicators.add(msg.getSenderId());
             this.ongoing_replications.remove(msg.getSenderId());
-            // System.out.printf("yay!!: Registered %s as a replicator successfully\n#Replicators: %d\tReplication Degree: %d\n", msg.getSenderId(), this.replicators.size(), this.replication_deg);
 
             if (this.replicators.size() >= this.replication_deg) {
                 System.out.printf("Chunk '%d' for fileid '%s' successfully replicated with a factor of '%d'\n", this.chunk_no, this.file_id, this.replication_deg);

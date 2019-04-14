@@ -19,7 +19,6 @@ public class RemovedTask extends Task {
     @Override
     public void notify(CommonMessage msg) {
         // Do nothing, no replies to DELETE messages are predicted in the protocol
-        // TODO: Discuss possibility of extracting this method to an intermediate class
     }
 
     @Override

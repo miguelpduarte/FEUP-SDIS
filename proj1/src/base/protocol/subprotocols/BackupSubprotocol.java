@@ -57,7 +57,6 @@ public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserv
     }
 
     private void stopAllTasks() {
-        // TODO
         // Iterate over the hashmap keys and unregister all of the tasks. Print "not success"
         System.out.println("Stopping all of the tasks because one was not successful");
         this.running_tasks.values().forEach(Task::stopTask);
@@ -77,7 +76,6 @@ public class BackupSubprotocol extends SynchronizedRunner implements ITaskObserv
     @Override
     public void notifyEnd(boolean success, int task_id) {
         if (!this.isRunning()) {
-            System.out.println("Subprotocol no longer running"); // TODO remove
             return;
         }
 

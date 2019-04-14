@@ -57,11 +57,9 @@ public class BackupChannelHandler extends ChannelHandler {
                 System.out.printf("\t\tMDB: Received message of type %s\n", info.getMessageType().name());
 
                 switch (info.getMessageType()) {
-                    // TODO Verify if the backup was previously requested by this Peer (cannot store in that case)
                     case PUTCHUNK:
                         // Middleware to ensure the rule: "A peer must never store the chunks of its own files"
                         if (RequestedBackupsState.getInstance().didRequestBackup(info.getFileId())) {
-                            System.out.println("DBG: File was mine, not storing!"); // TODO delete this
                             return;
                         }
                         if (info.getVersion().equals(ProtocolDefinitions.INITIAL_VERSION)) {

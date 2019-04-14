@@ -18,7 +18,6 @@ public class DeleteTask extends Task {
     @Override
     public void notify(CommonMessage msg) {
         // Do nothing, no replies to DELETE messages are predicted in the protocol
-        // TODO: Discuss possibility of extracting this method to an intermediate class
     }
 
     @Override
@@ -29,8 +28,6 @@ public class DeleteTask extends Task {
     @Override
     protected void handleMaxRetriesReached() {
         this.unregister();
-        //TODO: Delete later, only being used for debug printing
-        System.out.printf("DELETE for fileid '%s' reached the maximum number of retries\n", this.file_id);
     }
 
     @Override
