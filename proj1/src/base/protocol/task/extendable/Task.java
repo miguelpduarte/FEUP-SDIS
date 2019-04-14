@@ -79,12 +79,8 @@ public abstract class Task extends SynchronizedRunner implements Keyable {
             return;
         }
 
-        try {
-            printSendingMessage();
-            getChannel().broadcast(this.message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        printSendingMessage();
+        getChannel().broadcast(this.message);
 
         if (!this.will_retry) {
             return;

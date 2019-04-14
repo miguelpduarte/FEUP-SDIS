@@ -29,11 +29,7 @@ public class QueryDeletedHandler {
     private void advertiseService() {
         final byte[] message = MessageFactory.createQueryDeletedMessage(this.port);
             ThreadManager.getInstance().executeLaterMilis(() -> {
-                try {
-                    ChannelManager.getInstance().getControl().broadcast(message);
-                } catch (IOException e) {
-                    System.out.println("Error when advertising TCP Init service");
-                }
+                ChannelManager.getInstance().getControl().broadcast(message);
             }, ProtocolDefinitions.getRandomMessageDelayMilis());
     }
 

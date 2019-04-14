@@ -45,11 +45,7 @@ public class EnhancedPutchunkHandler {
         final byte[] message = MessageFactory.createCanStoreMessage(this.file_id, this.chunk_no, this.port);
         System.out.println("Waiting for data on port " + this.port);
         ThreadManager.getInstance().executeLaterMilis(() -> {
-            try {
-                ChannelManager.getInstance().getControl().broadcast(message);
-            } catch (IOException e) {
-                System.out.println("Error when advertising TCP Backup service");
-            }
+            ChannelManager.getInstance().getControl().broadcast(message);
         }, ProtocolDefinitions.getRandomMessageDelayMilis());
     }
 
@@ -106,12 +102,8 @@ public class EnhancedPutchunkHandler {
     private void sendStored() {
         final byte[] stored_message = MessageFactory.createStoredMessage(this.file_id, this.chunk_no);
         ThreadManager.getInstance().executeLaterMilis(() -> {
-            try {
-                System.out.println("Sending STORED Message after TCP transfer");
-                ChannelManager.getInstance().getControl().broadcast(stored_message);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            System.out.println("Sending STORED Message after TCP transfer");
+            ChannelManager.getInstance().getControl().broadcast(stored_message);
         }, ProtocolDefinitions.getRandomMessageDelayMilis());
     }
 }

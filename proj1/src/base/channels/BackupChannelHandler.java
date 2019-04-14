@@ -47,11 +47,7 @@ public class BackupChannelHandler extends ChannelHandler {
                         if (StorageManager.getInstance().hasChunk(file_id, chunk_no)) {
                             final byte[] stored_message = MessageFactory.createStoredMessage(file_id, chunk_no);
                             ThreadManager.getInstance().executeLaterMilis(() -> {
-                                try {
-                                    ChannelManager.getInstance().getControl().broadcast(stored_message);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                                ChannelManager.getInstance().getControl().broadcast(stored_message);
                             }, ProtocolDefinitions.getRandomMessageDelayMilis());
                         }
                     }
@@ -123,12 +119,8 @@ public class BackupChannelHandler extends ChannelHandler {
             System.out.printf("Stored file id '%s' - chunk no '%d' -> prepared reply STORED message and will make it broadcast after a random delay\n", file_id, chunk_no);
 
             ThreadManager.getInstance().executeLaterMilis(() -> {
-                try {
-                    System.out.printf("Broadcasting STORED for file id '%s' and chunk no '%d'\n", file_id, chunk_no);
-                    ChannelManager.getInstance().getControl().broadcast(stored_message);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                System.out.printf("Broadcasting STORED for file id '%s' and chunk no '%d'\n", file_id, chunk_no);
+                ChannelManager.getInstance().getControl().broadcast(stored_message);
             }, ProtocolDefinitions.getRandomMessageDelayMilis());
         } catch (InvalidMessageFormatException e) {
             e.printStackTrace();

@@ -176,12 +176,8 @@ public class ControlChannelHandler extends ChannelHandler {
 
         final byte[] chunk_message = MessageFactory.createChunkMessage(info.getFileId(), ((MessageWithChunkNo) info).getChunkNo(), chunk_data);
         Future f = ThreadManager.getInstance().executeLaterMilis(() -> {
-            try {
-                System.out.print("Broadcasting CHUNK\n");
-                ChannelManager.getInstance().getRestore().broadcast(chunk_message);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            System.out.print("Broadcasting CHUNK\n");
+            ChannelManager.getInstance().getRestore().broadcast(chunk_message);
         }, ProtocolDefinitions.getRandomMessageDelayMilis());
 
         ChannelManager.getInstance().getRestore().registerChunkToSend(info.getFileId(), ((MessageWithChunkNo) info).getChunkNo(), f);
