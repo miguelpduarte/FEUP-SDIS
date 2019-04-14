@@ -4,8 +4,9 @@ import base.ProtocolDefinitions;
 import base.ThreadManager;
 import base.messages.*;
 import base.persistentstate.FileDeletionLog;
-import base.protocol.EnhancedGetchunkHandler;
-import base.protocol.task.*;
+import base.protocol.task.EnhancedPutchunkTask;
+import base.protocol.task.PutchunkTask;
+import base.protocol.task.TaskManager;
 import base.protocol.task.extendable.Task;
 import base.storage.StorageManager;
 import base.storage.requested.RequestedBackupsState;
@@ -55,7 +56,7 @@ public class ControlChannelHandler extends ChannelHandler {
                             handleGetchunk(info);
                         } else if (info.getVersion().equals(ProtocolDefinitions.IMPROVED_VERSION) && info.getVersion().equals(ProtocolDefinitions.VERSION)) {
                             // Current version and message version MUST BE the Improved Version
-                            handleGetchunkEnh(info);
+                            handleGetchunkEnh((MessageWithPasvPort) info, dp.getAddress());
                         }
                         break;
                     case CANSTORE:
@@ -66,9 +67,6 @@ public class ControlChannelHandler extends ChannelHandler {
                         break;
                     case REMOVED:
                         handleRemoved(info);
-                        break;
-                    case PASVCHUNK:
-                        handlePasvChunk((MessageWithPasvPort) info, dp.getAddress());
                         break;
                     case QUERYDELETED:
                         handleQueryDeleted((QueryDeletedMessage) info, dp.getAddress());
@@ -99,13 +97,6 @@ public class ControlChannelHandler extends ChannelHandler {
         final Task t = TaskManager.getInstance().getTask(info);
         if (t != null) {
             ((EnhancedPutchunkTask) t).notify((MessageWithPasvPort) info, address);
-        }
-    }
-
-    private void handlePasvChunk(MessageWithPasvPort info, InetAddress address) {
-        final Task t = TaskManager.getInstance().getTask(info);
-        if (t != null) {
-            ((EnhancedGetchunkTask) t).notify(info, address);
         }
     }
 
@@ -154,18 +145,25 @@ public class ControlChannelHandler extends ChannelHandler {
         RequestedBackupsState.getInstance().unregisterRequestedFile(info.getFileId());
     }
 
-    private void handleGetchunkEnh(CommonMessage info) {
-        byte[] chunk_data = StorageManager.getInstance().getStoredChunk(info.getFileId(), ((MessageWithChunkNo) info).getChunkNo());
+    private void handleGetchunkEnh(MessageWithPasvPort info, InetAddress address) {
+        byte[] chunk_data = StorageManager.getInstance().getStoredChunk(info.getFileId(), info.getChunkNo());
         if (chunk_data == null) {
-            System.out.println("Don't have the chunk");
+            System.out.println("Don't have the requested chunk");
             return;
         }
 
-        try {
+        // System.out.println("Connecting to: " + address + " port " + info.getPasvPort());
+        try (Socket s = new Socket(address, info.getPasvPort()); ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream())) {
+            oos.writeObject(chunk_data);
+            // System.out.println("Success");
+        } catch (IOException ignored) {
+        }
+
+        /*try {
             new EnhancedGetchunkHandler((MessageWithChunkNo) info, chunk_data);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     private void handleGetchunk(CommonMessage info) {

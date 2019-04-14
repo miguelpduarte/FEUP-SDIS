@@ -26,7 +26,6 @@ public class ProtocolDefinitions {
         CHUNK,
         DELETE,
         REMOVED,
-        PASVCHUNK,
         CANSTORE,
         QUERYDELETED
     }
@@ -35,6 +34,10 @@ public class ProtocolDefinitions {
 
     public static int getMaxMessageDelay() {
         return Arrays.stream(MESSAGE_DELAYS).max().getAsInt();
+    }
+
+    public static int getSumMessageDelay() {
+        return Arrays.stream(MESSAGE_DELAYS).sum();
     }
 
     private static final int MIN_RANDOM_MESSAGE_DELAY_MILIS = 0;

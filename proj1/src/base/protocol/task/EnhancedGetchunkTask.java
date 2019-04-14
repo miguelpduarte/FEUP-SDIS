@@ -1,22 +1,62 @@
 package base.protocol.task;
 
 import base.ProtocolDefinitions;
+import base.ThreadManager;
 import base.channels.ChannelHandler;
 import base.channels.ChannelManager;
 import base.messages.MessageFactory;
-import base.messages.MessageWithPasvPort;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class EnhancedGetchunkTask extends GetchunkTask {
-    public EnhancedGetchunkTask(String file_id, String file_name, int chunk_no) {
+    private final ServerSocket server_socket;
+    private final int port;
+
+    public EnhancedGetchunkTask(String file_id, String file_name, int chunk_no) throws IOException {
         super(file_id, file_name, chunk_no);
+        this.server_socket = new ServerSocket(0);
+        // The timeout value is the maximum exponential backoff time delay used for retries in other subprotocols
+        this.server_socket.setSoTimeout(ProtocolDefinitions.getSumMessageDelay() * ProtocolDefinitions.SECOND_TO_MILIS);
+        this.port = this.server_socket.getLocalPort();
+        prepareMessage();
+        ThreadManager.getInstance().executeLater(() -> {
+            listen();
+            try {
+                this.server_socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    public synchronized void notify(MessageWithPasvPort msg, InetAddress address) {
+    private void listen() {
+        try {
+            final Socket connection = this.server_socket.accept();
+            // Using ObjectOutputStream because this ensures that the byte[] is written as an object (aka all at once)
+            ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
+            byte[] chunk_data = (byte[]) ois.readObject();
+            // System.out.println("\tReceiving succesful! chk " + chunk_no);
+            connection.close();
+
+            if (this.storeInFile(chunk_data)) {
+                System.out.println("Success in TCP Restore protocol! chk " + chunk_no);
+                this.stopTask();
+                this.notifyObserver(true);
+            }
+        } catch (SocketTimeoutException e) {
+            // Socket awaiting connection timed out
+            System.out.println("Getchunk Socket awaiting data timed out!");
+            this.notifyObserver(false);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*public synchronized void notify(MessageWithPasvPort msg, InetAddress address) {
         if (!this.isRunning()) {
             return;
         }
@@ -48,11 +88,11 @@ public class EnhancedGetchunkTask extends GetchunkTask {
         }
 
         this.resumeCommuncation();
-    }
+    }*/
 
     @Override
     protected byte[] createMessage() {
-        return MessageFactory.createGetchunkMessage(file_id, this.chunk_no, false);
+        return MessageFactory.createEnhancedGetchunkMessage(file_id, this.chunk_no, this.port);
     }
 
     @Override
@@ -64,12 +104,13 @@ public class EnhancedGetchunkTask extends GetchunkTask {
 
     @Override
     protected void printSendingMessage() {
-        System.out.printf("Sending GETCHUNK message for fileid '%s' and chunk_no '%d' - attempt #%d\n", this.file_id, this.chunk_no, this.getCurrentAttempt() + 1);
+        System.out.printf("Sending EnhancedGETCHUNK message for fileid '%s' and chunk_no '%d' - attempt #%d\n", this.file_id, this.chunk_no, this.getCurrentAttempt() + 1);
     }
 
     @Override
     public String toKey() {
-        return ProtocolDefinitions.MessageType.PASVCHUNK.name() + file_id + this.chunk_no;
+        // "EXTRA_GETCHUNK_PREFIX" is added to ensure that there are no collisions with hashes of just file_ids
+        return "EXTRA_GETCHUNK_PREFIX" + this.file_id + this.chunk_no;
     }
 
     @Override

@@ -9,6 +9,7 @@ import base.protocol.task.extendable.ObservableTask;
 import base.protocol.task.extendable.Task;
 import base.storage.requested.RequestedBackupsState;
 
+import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RestoreSubprotocol extends SynchronizedRunner implements ITaskObserver {
@@ -86,6 +87,7 @@ public class RestoreSubprotocol extends SynchronizedRunner implements ITaskObser
             }
             // (This task is no longer being executed)
             this.running_tasks.remove(task_id);
+
             this.launchNextTask();
         }
     }
@@ -123,7 +125,12 @@ public class RestoreSubprotocol extends SynchronizedRunner implements ITaskObser
 
         ObservableTask ot;
         if (this.is_enhanced_version) {
-            ot = new EnhancedGetchunkTask(file_id, file_name, last_running_chunk_no);
+            try {
+                ot = new EnhancedGetchunkTask(file_id, file_name, last_running_chunk_no);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
         } else {
             ot = new GetchunkTask(file_id, file_name, last_running_chunk_no);
         }

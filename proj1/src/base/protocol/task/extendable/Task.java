@@ -8,7 +8,6 @@ import base.messages.CommonMessage;
 import base.protocol.SynchronizedRunner;
 import base.protocol.task.TaskManager;
 
-import java.io.IOException;
 import java.util.concurrent.Future;
 
 public abstract class Task extends SynchronizedRunner implements Keyable {
@@ -58,7 +57,7 @@ public abstract class Task extends SynchronizedRunner implements Keyable {
 
     private synchronized void communicate() {
         if (!this.isRunning()) {
-            System.out.println("Task not running!");
+            // System.out.println("Task not running!");
             return;
         }
 
@@ -68,12 +67,11 @@ public abstract class Task extends SynchronizedRunner implements Keyable {
         }
 
         if (!this.isCommunicating()) {
-            System.out.println("Not communicating atm, trying again later"); // TODO REMOVE? handling repeated calls (?)
+            // System.out.println("Not communicating atm, trying again later");
             if (this.next_action == null || this.next_action.isDone() || this.next_action.isCancelled()) {
                 if (!this.will_retry) {
                     return;
                 }
-                System.out.println("Penso deu#=====================");
                 this.next_action = ThreadManager.getInstance().executeLater(this::communicate, ProtocolDefinitions.MESSAGE_DELAYS[this.getCurrentAttempt()]);
             }
             return;
@@ -93,19 +91,17 @@ public abstract class Task extends SynchronizedRunner implements Keyable {
     }
 
     protected final void pauseCommunication() {
-        if (!this.isCommunicating()) {
-            System.out.println("Cancelling non-running communication");
-            //return;
-        }
+        // if (!this.isCommunicating()) {
+        //    System.out.println("Cancelling non-running communication");
+        // }
         this.next_action.cancel(true);
         this.setIsCommunicating(false);
     }
 
     protected final void resumeCommuncation() {
-        if (this.isCommunicating()) {
-            System.out.println("Resumed twice but ok!");
-            //return;
-        }
+        //if (this.isCommunicating()) {
+        //    System.out.println("Resumed twice but ok!");
+        //}
         this.setIsCommunicating(true);
     }
 
@@ -118,7 +114,9 @@ public abstract class Task extends SynchronizedRunner implements Keyable {
     }
 
     private void cancelCommunication() {
-        this.next_action.cancel(true);
+        if (this.next_action != null) {
+            this.next_action.cancel(true);
+        }
         this.setIsCommunicating(false);
     }
 

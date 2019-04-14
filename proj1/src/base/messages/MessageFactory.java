@@ -44,17 +44,28 @@ public class MessageFactory {
     }
 
     public static byte[] createGetchunkMessage(String file_id, int chunk_no) {
-        return createGetchunkMessage(file_id, chunk_no, true);
-    }
-
-    public static byte[] createGetchunkMessage(String file_id, int chunk_no, boolean is_basic) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("GETCHUNK").append(" ");
-        sb.append(is_basic ? ProtocolDefinitions.INITIAL_VERSION : ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.INITIAL_VERSION).append(" ");
         sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
         sb.append(file_id).append(" ");
         sb.append(chunk_no).append(" ");
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
+
+        return sb.toString().getBytes();
+    }
+
+    public static byte[] createEnhancedGetchunkMessage(String file_id, int chunk_no, int port) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("GETCHUNK").append(" ");
+        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
+        sb.append(file_id).append(" ");
+        sb.append(chunk_no).append(" ");
+        sb.append(ProtocolDefinitions.CRLF);
+        sb.append(port).append(" ");
         sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
 
         return sb.toString().getBytes();
@@ -95,8 +106,6 @@ public class MessageFactory {
     }
 
     public static String filenameEncode(String file_name) {
-        // TODO CHECK THIS RUI SPAGHET
-        // Changed file_name + SERVER_ID to file_name + timestamp
         final String text_to_encode = file_name + System.currentTimeMillis();
 
         MessageDigest digest;
@@ -203,21 +212,6 @@ public class MessageFactory {
         return sb.toString().getBytes();
     }
 
-    public static byte[] createPasvChunkMessage(String file_id, int chunk_no, int pasv_port) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("PASVCHUNK").append(" ");
-        sb.append(ProtocolDefinitions.VERSION).append(" ");
-        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
-        sb.append(file_id).append(" ");
-        sb.append(chunk_no).append(" ");
-        sb.append(ProtocolDefinitions.CRLF);
-        sb.append(pasv_port).append(" ");
-        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
-
-        return sb.toString().getBytes();
-    }
-
     public static byte[] createCanStoreMessage(String file_id, int chunk_no, int pasv_port) {
         StringBuilder sb = new StringBuilder();
 
@@ -296,9 +290,32 @@ public class MessageFactory {
                                 crlf_index
                         );
                     }
+                case GETCHUNK:
+                    if (header_fields[1].equals(ProtocolDefinitions.INITIAL_VERSION)) {
+                        return new MessageWithChunkNo(
+                                msg_type,
+                                header_fields[1],
+                                header_fields[2],
+                                header_fields[3],
+                                Integer.parseInt(header_fields[4]),
+                                message,
+                                msg_length,
+                                crlf_index
+                        );
+                    } else {
+                        return new MessageWithPasvPort(
+                                msg_type,
+                                header_fields[1],
+                                header_fields[2],
+                                header_fields[3],
+                                Integer.parseInt(header_fields[4]),
+                                message,
+                                msg_length,
+                                crlf_index
+                        );
+                    }
                 // with chunk no and without replication deg
                 case STORED:
-                case GETCHUNK:
                 case CHUNK:
                 case REMOVED:
                     return new MessageWithChunkNo(
@@ -322,8 +339,6 @@ public class MessageFactory {
                             msg_length,
                             crlf_index
                     );
-                // unexpected message type
-                case PASVCHUNK:
                 case CANSTORE:
                     return new MessageWithPasvPort(
                             msg_type,
@@ -344,6 +359,7 @@ public class MessageFactory {
                             msg_length,
                             crlf_index
                     );
+                // unexpected message type
                 default:
                     return null;
             }
