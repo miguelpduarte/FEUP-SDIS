@@ -63,9 +63,9 @@ public class PeerMain {
         ShutdownAndStartupHandler.startPeriodicBackupService();
 
         // Read file id map from disk
-        FileIdMapper.getInstance().readMapFromDisk();
+        FileIdMapper.getInstance().readFromDisk();
 
         // Read file deletion log from disk
-        FileDeletionLog.getInstance().readLogFromDisk();
+        FileDeletionLog.getInstance().readFromDisk();
     }
 }

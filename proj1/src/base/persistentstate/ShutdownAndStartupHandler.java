@@ -52,8 +52,8 @@ public class ShutdownAndStartupHandler {
     }
 
     private static void backup() throws IOException {
-        FileIdMapper.getInstance().writeMapToDisk();
-        FileDeletionLog.getInstance().writeLogToDisk();
+        FileIdMapper.getInstance().writeToDisk();
+        FileDeletionLog.getInstance().writeToDisk();
 
         try (
                 FileOutputStream fos = new FileOutputStream(StorageManager.getInstance().getChunkBackupInformationPath());

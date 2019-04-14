@@ -8,7 +8,7 @@ import base.storage.requested.RequestedBackupsState;
 import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class FileIdMapper {
+public class FileIdMapper implements Serializable {
     private static FileIdMapper instance = new FileIdMapper();
     private ConcurrentHashMap<String, String> file_id_map = new ConcurrentHashMap<>();
 
@@ -41,17 +41,17 @@ public class FileIdMapper {
         file_id_map.remove(file_name);
     }
 
-    public void writeMapToDisk() {
+    public void writeToDisk() {
         try (
                 FileOutputStream fos = new FileOutputStream(StorageManager.getInstance().getFileIdMapPath());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)
         ) {
-            oos.writeObject(this.file_id_map);
+            oos.writeObject(this);
         } catch (Exception ignored) {
         }
     }
 
-    public void readMapFromDisk()  {
+    public void readFromDisk() {
         if (new File(StorageManager.getInstance().getFileIdMapPath()).length() == 0) {
             System.out.println("File id map in disk was empty.");
             return;
@@ -61,8 +61,8 @@ public class FileIdMapper {
                 FileInputStream fis = new FileInputStream(StorageManager.getInstance().getFileIdMapPath());
                 ObjectInputStream ois = new ObjectInputStream(fis)
         ) {
-            this.file_id_map = (ConcurrentHashMap<String, String>) ois.readObject();
-            System.out.printf("Done reading file id map from disk, containing %d items.\n", this.file_id_map.size());
+            instance = (FileIdMapper) ois.readObject();
+            System.out.printf("Done reading file id map from disk, containing %d items.\n", instance.file_id_map.size());
         } catch (Exception ignored) {
         }
     }

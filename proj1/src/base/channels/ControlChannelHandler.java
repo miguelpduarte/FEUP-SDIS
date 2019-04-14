@@ -6,6 +6,7 @@ import base.messages.CommonMessage;
 import base.messages.MessageFactory;
 import base.messages.MessageWithChunkNo;
 import base.messages.MessageWithPasvPort;
+import base.persistentstate.FileDeletionLog;
 import base.protocol.EnhancedGetchunkHandler;
 import base.protocol.task.*;
 import base.protocol.task.extendable.Task;
@@ -133,6 +134,7 @@ public class ControlChannelHandler extends ChannelHandler {
     }
 
     private void handleDelete(CommonMessage info) {
+        FileDeletionLog.getInstance().addFile(info.getFileId());
         StorageManager.getInstance().removeFileChunksIfStored(info.getFileId());
         RequestedBackupsState.getInstance().unregisterRequestedFile(info.getFileId());
     }

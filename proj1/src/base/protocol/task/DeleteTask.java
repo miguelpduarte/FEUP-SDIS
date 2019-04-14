@@ -4,12 +4,14 @@ import base.channels.ChannelHandler;
 import base.channels.ChannelManager;
 import base.messages.CommonMessage;
 import base.messages.MessageFactory;
+import base.persistentstate.FileDeletionLog;
 import base.protocol.task.extendable.Task;
 
 public class DeleteTask extends Task {
     public DeleteTask(String file_id) {
         // This task doesn't need to retry sending
         super(file_id, false);
+        FileDeletionLog.getInstance().addFile(file_id);
         prepareMessage();
     }
 
