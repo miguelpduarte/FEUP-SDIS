@@ -48,7 +48,7 @@ public class EnhancedPutchunkHandler {
             try {
                 ChannelManager.getInstance().getControl().broadcast(message);
             } catch (IOException e) {
-                System.out.println("Error when advertising TCP Restore service");
+                System.out.println("Error when advertising TCP Backup service");
             }
         }, ProtocolDefinitions.getRandomMessageDelayMilis());
     }

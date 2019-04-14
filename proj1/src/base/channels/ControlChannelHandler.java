@@ -2,10 +2,7 @@ package base.channels;
 
 import base.ProtocolDefinitions;
 import base.ThreadManager;
-import base.messages.CommonMessage;
-import base.messages.MessageFactory;
-import base.messages.MessageWithChunkNo;
-import base.messages.MessageWithPasvPort;
+import base.messages.*;
 import base.persistentstate.FileDeletionLog;
 import base.protocol.EnhancedGetchunkHandler;
 import base.protocol.task.*;
@@ -16,8 +13,10 @@ import base.storage.stored.ChunkBackupInfo;
 import base.storage.stored.ChunkBackupState;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.concurrent.Future;
 
 public class ControlChannelHandler extends ChannelHandler {
@@ -71,6 +70,8 @@ public class ControlChannelHandler extends ChannelHandler {
                     case PASVCHUNK:
                         handlePasvChunk((MessageWithPasvPort) info, dp.getAddress());
                         break;
+                    case QUERYDELETED:
+                        handleQueryDeleted((QueryDeletedMessage) info, dp.getAddress());
                     default:
                         break;
                 }
@@ -78,6 +79,17 @@ public class ControlChannelHandler extends ChannelHandler {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void handleQueryDeleted(QueryDeletedMessage info, InetAddress address) {
+        try (
+                Socket s = new Socket(address, info.getPort());
+                ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream())
+        ) {
+            oos.writeObject(FileDeletionLog.getInstance());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void handleCanStore(CommonMessage info, InetAddress address) {

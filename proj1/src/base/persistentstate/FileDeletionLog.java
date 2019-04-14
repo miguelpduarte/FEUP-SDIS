@@ -25,6 +25,15 @@ public class FileDeletionLog implements Serializable {
         deletion_log.put(file_id, ProtocolDefinitions.MOCK_HASHMAP_SET_VALUE);
     }
 
+    public void joinLog(FileDeletionLog file_deletion_log) {
+        deletion_log.putAll(file_deletion_log.deletion_log);
+
+        // Delete files that are supposed to be deleted
+        for (String file_id : deletion_log.keySet()) {
+            StorageManager.getInstance().removeFileChunksIfStored(file_id);
+        }
+    }
+
     public void writeToDisk() {
         try (
                 FileOutputStream fos = new FileOutputStream(StorageManager.getInstance().getFileDeletionLogPath());

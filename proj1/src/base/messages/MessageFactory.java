@@ -233,6 +233,19 @@ public class MessageFactory {
         return sb.toString().getBytes();
     }
 
+    public static byte[] createQueryDeletedMessage(int pasv_port) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("QUERYDELETED").append(" ");
+        sb.append(ProtocolDefinitions.VERSION).append(" ");
+        sb.append(ProtocolDefinitions.SERVER_ID).append(" ");
+        sb.append(ProtocolDefinitions.CRLF);
+        sb.append(pasv_port).append(" ");
+        sb.append(ProtocolDefinitions.CRLF).append(ProtocolDefinitions.CRLF);
+
+        return sb.toString().getBytes();
+    }
+
     public static CommonMessage getBasicInfo(byte[] message, int msg_length) {
         int crlf_index = getCRLFIndex(message, message.length);
         if (crlf_index == -1) {
@@ -318,6 +331,15 @@ public class MessageFactory {
                             header_fields[2],
                             header_fields[3],
                             Integer.parseInt(header_fields[4]),
+                            message,
+                            msg_length,
+                            crlf_index
+                    );
+                case QUERYDELETED:
+                    return new QueryDeletedMessage(
+                            msg_type,
+                            header_fields[1],
+                            header_fields[2],
                             message,
                             msg_length,
                             crlf_index

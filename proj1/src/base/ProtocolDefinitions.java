@@ -27,7 +27,8 @@ public class ProtocolDefinitions {
         DELETE,
         REMOVED,
         PASVCHUNK,
-        CANSTORE
+        CANSTORE,
+        QUERYDELETED
     }
 
     public static final int[] MESSAGE_DELAYS = {1, 2, 4, 8};

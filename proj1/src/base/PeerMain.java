@@ -3,6 +3,7 @@ package base;
 import base.persistentstate.FileDeletionLog;
 import base.persistentstate.FileIdMapper;
 import base.persistentstate.ShutdownAndStartupHandler;
+import base.protocol.QueryDeletedHandler;
 import base.storage.StorageManager;
 
 import java.rmi.RemoteException;
@@ -41,14 +42,14 @@ public class PeerMain {
             Registry reg = LocateRegistry.getRegistry();
 
             // Bind this object instance to a name
-            reg.bind(service_access_point, obj);
+            reg.rebind(service_access_point, obj);
 
             System.out.println("Bound with gotten registry");
         } catch (RemoteException e) {
             Registry reg = LocateRegistry.createRegistry(1099);
 
             // Bind this object instance to a name
-            reg.bind(service_access_point, obj);
+            reg.rebind(service_access_point, obj);
 
             System.out.println("Bound with created registry");
         }
@@ -67,5 +68,8 @@ public class PeerMain {
 
         // Read file deletion log from disk
         FileDeletionLog.getInstance().readFromDisk();
+
+        // Query file deletions that occured while offline
+        new QueryDeletedHandler();
     }
 }
