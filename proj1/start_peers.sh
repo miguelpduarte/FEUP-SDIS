@@ -26,7 +26,7 @@ ENHANCED_PROTOCOL_VERSION="2.1"
 
 while [[ $# > 0 ]]; do
     case $1 in
-    "--tile" | "-t")
+    "-t" | "--tile")
 	    echo "Enabling tiling mode using i3";
         if (( $# >= 2 )) && [[ $2 =~ $NUMBER_REGEX ]]; then
             TILE_COLS=$2; echo "Using tiling of $2 columns"
@@ -36,7 +36,7 @@ while [[ $# > 0 ]]; do
         fi
         shift
 	;;
-	"--kill" | "-k")
+	"-k" | "--kill")
 	    echo "Killing the previously running peers"
 	    # (assumes that both shell scripts are in the same directory)
         sh "$FULL_PATH/kill_peers.sh"
@@ -59,9 +59,9 @@ while [[ $# > 0 ]]; do
 	    PROTOCOL_VERSION=$BASIC_PROTOCOL_VERSION
 	    shift
     ;;
-	"-r" | "--remove") # TODO
-	    echo "Removing previous peer files"
-	    rm -rf "$FULL_PATH"/peer*
+	"-r" | "--remove")
+	    echo "Removing previous Peer files"
+	    rm -rf peer*
 	    shift
 	;;
     *)
@@ -86,7 +86,9 @@ if [[ -z ${N_PEERS+x} ]]; then
     exit 1
 fi
 
-echo "Starting with id ${PEER_START_ID+0}";
+if [[ -n ${PEER_START_ID+x} ]]; then
+    echo "Starting with id ${PEER_START_ID+0}";
+fi
 
 # Application arguments
 # The default protocol version is enhanced
@@ -108,14 +110,12 @@ MDC_PORT="8825"
 for (( i = PEER_START_ID; i < N_PEERS + PEER_START_ID; i++ )); do
     # i3 tiling
     if [[ -n ${TILE_COLS+x} ]]; then
-        col=$((i % TILE_COLS))
-        # echo "my col: $col"
+        col=$(( (i - PEER_START_ID) % TILE_COLS))
 	    if [[ $col == 0 ]]; then
 	        i3-msg -q split h
 	    elif [[ $col == $((TILE_COLS-1)) ]]; then
 	        i3-msg -q focus parent
 	        i3-msg -q split v
-	        # echo newrow
 	    fi
     fi
 
