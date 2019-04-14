@@ -1,0 +1,20 @@
+To build and run the project, a set of scripts were developed.
+
+To build the project:
+./build.sh
+This script makes use of the build_peer.sh (that builds the peer app) and the build_testapp (that builds the test app) scripts.
+
+To lauch multiple peers at the same time:
+./start_peers.sh <num_peers>
+This script allows the following flags:
+-k | --kill       -> kill running peers on startup (if existant)
+-b | --basic      -> peers using basic protocols version 1.0 (default is enhanced 2.1)
+-s | --start-id   -> specify the starting peer id (default is 0)
+-t | --tile       -> enable tiling mode (if using i3 window manager)
+
+To kill all running peers:
+./kill_peers.sh
+
+To run the a test app:
+./run.sh <peer_id> <protocol_method> (<protocol_arg>)*
+
