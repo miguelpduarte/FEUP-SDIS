@@ -1,20 +1,29 @@
-To build and run the project, a set of scripts were developed.
+To build and run the project, a set of shell scripts were developed.
 
 To build the project:
 ./build.sh
-This script makes use of the build_peer.sh (that builds the peer app) and the build_testapp (that builds the test app) scripts.
+This script makes use of the build_peer.sh (that builds the peer app) and the build_testapp.sh (that builds the test app) scripts.
 
 To lauch multiple peers at the same time:
 ./start_peers.sh <num_peers>
-This script allows the following flags:
--k | --kill       -> kill running peers on startup (if existant)
--b | --basic      -> peers using basic protocols version 1.0 (default is enhanced 2.1)
--s | --start-id   -> specify the starting peer id (default is 0)
--t | --tile       -> enable tiling mode (if using i3 window manager)
+
+This script also accepts the following flags (they may be in any order, given that the argument of a flag must follow the flag):
+-k | --kill       -> kill running peers on startup (if existent)
+-b | --basic      -> peers are launched using protocol version 1.0 - the provided specification (the default is the enhanced version, 2.1)
+-s | --start-id   -> specify the starting peer id (default is 0); The following argument is the value of the starting peer identifier
+-t | --tile       -> enable tiling mode (only possible when using i3 window manager); May accept a number as the next argument that is the number of columns to tile into
+-r | --remove     -> removes the previous stored peer files - backed up chunks, restored files and serialized stored data (.sdis files)
 
 To kill all running peers:
 ./kill_peers.sh
 
 To run the a test app:
 ./run.sh <peer_id> <protocol_method> (<protocol_arg>)*
+Where peer_id is the bound RMI name of the desired peer
+(Note: start_peers.sh automatically prefixes the peer id number with "Peer-". So, the peer with id 0 would be bound as "Peer-0")
 
+Examples:
+To launch 5 peers in the enhanced mode, killing the previously running peer processes and emptying the data stored in disk:
+    ./start_peers.sh -k -r 5
+Afterwards, to have Peer 1 run an enhanced backup for the file "test.txt" with a replication degree of 3:
+    ./run.sh Peer-1 BACKUPENH test.txt 3
