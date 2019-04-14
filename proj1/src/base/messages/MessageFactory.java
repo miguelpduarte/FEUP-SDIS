@@ -95,7 +95,9 @@ public class MessageFactory {
     }
 
     public static String filenameEncode(String file_name) {
-        final String text_to_encode = file_name + ProtocolDefinitions.SERVER_ID;
+        // TODO CHECK THIS RUI SPAGHET
+        // Changed file_name + SERVER_ID to file_name + timestamp
+        final String text_to_encode = file_name + System.currentTimeMillis();
 
         MessageDigest digest;
         byte[] hash = new byte[0];

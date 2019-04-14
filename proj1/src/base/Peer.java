@@ -5,6 +5,7 @@ import base.channels.ChannelManager;
 import base.channels.ControlChannelHandler;
 import base.channels.RestoreChannelHandler;
 import base.messages.MessageFactory;
+import base.persistentstate.FileIdMapper;
 import base.protocol.subprotocols.BackupSubprotocol;
 import base.protocol.task.*;
 import base.storage.StorageManager;
@@ -61,6 +62,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         final String file_name = new File(file_path).getName();
         final String file_id = MessageFactory.filenameEncode(file_name);
 
+        // TODO CHECK THIS RUI SPAGHET
+        FileIdMapper.getInstance().putFile(file_name, file_id);
+
         RequestedBackupsState.getInstance().registerRequestedFile(new RequestedBackupFile(file_id, file_name, replication_factor));
 
         try {
@@ -98,6 +102,9 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         final String file_name = new File(file_path).getName();
         final String file_id = MessageFactory.filenameEncode(file_name);
 
+        // TODO CHECK THIS RUI SPAGHET
+        FileIdMapper.getInstance().putFile(file_name, file_id);
+
         RequestedBackupsState.getInstance().registerRequestedFile(new RequestedBackupFile(file_id, file_name, replication_factor));
 
         try {
@@ -127,7 +134,19 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();
-        final String file_id = MessageFactory.filenameEncode(file_name);
+
+
+
+        // TODO CHECK THIS RUI SPAGHET
+        final String file_id = FileIdMapper.getInstance().getFileId(file_name);
+
+        if (file_id == null) {
+            System.out.println("File id not found in file id map (was not backed up by this Peer), cannot restore!");
+            return -1;
+        }
+        // TODO CHECK THIS RUI SPAGHET
+
+
 
         if (RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id) instanceof NullRequestedBackupFile) {
             System.out.println("File was not backed up by this Peer, cannot restore!");
@@ -150,7 +169,19 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();
-        final String file_id = MessageFactory.filenameEncode(file_name);
+
+
+
+        // TODO CHECK THIS RUI SPAGHET
+        final String file_id = FileIdMapper.getInstance().getFileId(file_name);
+
+        if (file_id == null) {
+            System.out.println("File id not found in file id map (was not backed up by this Peer), cannot restore!");
+            return -1;
+        }
+        // TODO CHECK THIS RUI SPAGHET
+
+
 
         if (RequestedBackupsState.getInstance().getRequestedFileBackupInfo(file_id) instanceof NullRequestedBackupFile) {
             System.out.println("File was not backed up by this Peer, cannot restore!");
@@ -169,7 +200,19 @@ public class Peer extends UnicastRemoteObject implements IPeer {
         System.out.println("file_path = [" + file_path + "]");
 
         final String file_name = new File(file_path).getName();
-        final String file_id = MessageFactory.filenameEncode(file_name);
+
+
+
+        // TODO CHECK THIS RUI SPAGHET
+        final String file_id = FileIdMapper.getInstance().getFileId(file_name);
+
+        if (file_id == null) {
+            System.out.println("File id not found in file id map (was not backed up by this Peer), cannot delete!");
+            return -1;
+        }
+        // TODO CHECK THIS RUI SPAGHET
+
+
 
         TaskManager.getInstance().registerTask(new DeleteTask(file_id));
         // Also deleting own files if they exist

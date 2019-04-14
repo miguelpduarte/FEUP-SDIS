@@ -14,6 +14,7 @@ public class StorageManager {
     private int occupied_space_bytes = 0;
     private int max_space_kbytes = ProtocolDefinitions.INITIAL_STORAGE_MAX_KBS;
     private String chunk_backup_information_path;
+    private String file_id_map_path;
 
     public static StorageManager getInstance() {
         return instance;
@@ -59,6 +60,7 @@ public class StorageManager {
         this.backup_dirname = peer_dirname + "/" + ProtocolDefinitions.BACKUP_DIRNAME + "/";
         this.restored_dirname = peer_dirname + "/" + ProtocolDefinitions.RESTORED_DIRNAME + "/";
         this.chunk_backup_information_path = peer_dirname + "/" + ProtocolDefinitions.STORED_CHUNKS_BACKUP_INFORMATION_FILENAME;
+        this.file_id_map_path = peer_dirname + "/" + ProtocolDefinitions.FILEID_MAP_FILENAME;
 
         // Creating the actual directories:
         new File(this.backup_dirname).mkdirs();
@@ -67,6 +69,11 @@ public class StorageManager {
         // Creating the backup files
         if (!new File(this.chunk_backup_information_path).exists()) {
             StorageManager.createEmptyFile(this.chunk_backup_information_path);
+        }
+
+        // Creating the file id map file
+        if (!new File(this.file_id_map_path).exists()) {
+            StorageManager.createEmptyFile(this.file_id_map_path);
         }
     }
 
@@ -248,5 +255,9 @@ public class StorageManager {
 
     public String getChunkBackupInformationPath() {
         return chunk_backup_information_path;
+    }
+
+    public String getFileIdMapPath() {
+        return file_id_map_path;
     }
 }

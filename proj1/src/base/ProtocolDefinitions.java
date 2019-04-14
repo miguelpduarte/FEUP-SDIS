@@ -8,6 +8,7 @@ public class ProtocolDefinitions {
     public final static byte CR = 0xD;
     public final static byte LF = 0xA;
     public static final String STORED_CHUNKS_BACKUP_INFORMATION_FILENAME = "saved_state.sdis";
+    public static final String FILEID_MAP_FILENAME = "file_id_map.sdis";
     public static final Boolean MOCK_HASHMAP_SET_VALUE = true;
     public static final int BACKUP_INTERVAL_SECONDS = 30;
     public static final int SECOND_TO_MILIS = 1000;

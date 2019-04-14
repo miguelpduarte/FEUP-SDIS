@@ -1,5 +1,6 @@
 package base;
 
+import base.persistentstate.FileIdMapper;
 import base.persistentstate.ShutdownAndStartupHandler;
 import base.storage.StorageManager;
 
@@ -59,5 +60,7 @@ public class PeerMain {
 
         ShutdownAndStartupHandler.installShutdownHook();
         ShutdownAndStartupHandler.startPeriodicBackupService();
+
+        FileIdMapper.getInstance().readMapFromDisk();
     }
 }
